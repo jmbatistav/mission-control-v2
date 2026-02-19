@@ -1,12 +1,21 @@
 "use client";
 
 import { Html } from "@react-three/drei";
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 interface MeetingRoomProps {
   position: [number, number, number];
+  /** Active meeting title (if any) */
+  activeMeetingTitle?: string;
+  /** Whether a meeting is in progress */
+  isActive?: boolean;
 }
 
-export default function MeetingRoom({ position }: MeetingRoomProps) {
+export default function MeetingRoom({ position, activeMeetingTitle, isActive }: MeetingRoomProps) {
+  const glowRef = useRef<THREE.Mesh>(null);
+
   const chairPositions: [number, number, number][] = [];
   for (let i = 0; i < 6; i++) {
     const angle = (i / 6) * Math.PI * 2;
@@ -17,6 +26,16 @@ export default function MeetingRoom({ position }: MeetingRoomProps) {
     ]);
   }
 
+  // Subtle pulsing glow when meeting is active
+  useFrame(({ clock }) => {
+    if (glowRef.current && isActive) {
+      const t = clock.getElapsedTime();
+      const mat = glowRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.15 + Math.sin(t * 2) * 0.05;
+      mat.opacity = 0.12 + Math.sin(t * 2) * 0.03;
+    }
+  });
+
   return (
     <group position={position}>
       {/* Glass walls */}
@@ -24,9 +43,9 @@ export default function MeetingRoom({ position }: MeetingRoomProps) {
       <mesh position={[0, 1.0, -2.5]} castShadow>
         <boxGeometry args={[5, 2.0, 0.06]} />
         <meshStandardMaterial
-          color="#1e3a5f"
+          color={isActive ? "#1e4a6f" : "#1e3a5f"}
           transparent
-          opacity={0.2}
+          opacity={isActive ? 0.25 : 0.2}
           roughness={0.1}
           metalness={0.8}
         />
@@ -35,9 +54,9 @@ export default function MeetingRoom({ position }: MeetingRoomProps) {
       <mesh position={[2.5, 1.0, 0]} castShadow>
         <boxGeometry args={[0.06, 2.0, 5]} />
         <meshStandardMaterial
-          color="#1e3a5f"
+          color={isActive ? "#1e4a6f" : "#1e3a5f"}
           transparent
-          opacity={0.2}
+          opacity={isActive ? 0.25 : 0.2}
           roughness={0.1}
           metalness={0.8}
         />
@@ -78,23 +97,47 @@ export default function MeetingRoom({ position }: MeetingRoomProps) {
         );
       })}
 
-      {/* Sign */}
+      {/* Floor glow when active */}
+      {isActive && (
+        <mesh
+          ref={glowRef}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.01, 0]}
+        >
+          <circleGeometry args={[3, 32]} />
+          <meshStandardMaterial
+            color="#3b82f6"
+            emissive="#3b82f6"
+            emissiveIntensity={0.15}
+            transparent
+            opacity={0.12}
+          />
+        </mesh>
+      )}
+
+      {/* Sign — shows meeting title when active */}
       <Html position={[0, 2.3, -2.4]} center distanceFactor={15}>
         <div
           style={{
-            background: "rgba(15, 23, 42, 0.85)",
+            background: isActive
+              ? "rgba(30, 58, 138, 0.9)"
+              : "rgba(15, 23, 42, 0.85)",
             borderRadius: "6px",
             padding: "4px 12px",
-            border: "1px solid rgba(51, 65, 85, 0.5)",
+            border: isActive
+              ? "1px solid rgba(59, 130, 246, 0.5)"
+              : "1px solid rgba(51, 65, 85, 0.5)",
             fontSize: "11px",
             fontWeight: 600,
-            color: "#94a3b8",
+            color: isActive ? "#93c5fd" : "#94a3b8",
             fontFamily: "system-ui, -apple-system, sans-serif",
             whiteSpace: "nowrap",
             userSelect: "none",
           }}
         >
-          🏛️ Meeting Room
+          {isActive && activeMeetingTitle
+            ? `🔴 ${activeMeetingTitle}`
+            : "🏛️ Meeting Room"}
         </div>
       </Html>
     </group>

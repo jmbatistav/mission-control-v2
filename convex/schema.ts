@@ -121,6 +121,16 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_function", ["function"]).index("by_owner", ["owner"]).index("by_status", ["status"]),
 
+  meetings: defineTable({
+    title: v.string(),
+    participants: v.array(v.string()),
+    location: v.union(v.literal("meeting_room"), v.literal("manager_office")),
+    status: v.union(v.literal("scheduled"), v.literal("in_progress"), v.literal("ended")),
+    startTime: v.number(),
+    endTime: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_status", ["status"]),
+
   calendarEvents: defineTable({
     title: v.string(),
     description: v.optional(v.string()),

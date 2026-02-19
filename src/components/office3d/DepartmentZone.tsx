@@ -33,6 +33,8 @@ interface DepartmentZoneProps {
   basePosition: [number, number, number];
   onAgentClick?: (id: string) => void;
   hideLabels?: boolean;
+  /** Set of agent IDs currently walking/in-meeting (render separately) */
+  mobileAgentIds?: Set<string>;
 }
 
 export default function DepartmentZone({
@@ -42,6 +44,7 @@ export default function DepartmentZone({
   basePosition,
   onAgentClick,
   hideLabels,
+  mobileAgentIds,
 }: DepartmentZoneProps) {
   const spacing = 3;
 
@@ -88,29 +91,35 @@ export default function DepartmentZone({
       {agents.map((agent, i) => {
         const resolvedColor = colorMap[agent.color] || "#6b7280";
         const cubiclePos: [number, number, number] = [i * spacing, 0, 0];
+        const isMobile = mobileAgentIds?.has(agent._id) ?? false;
 
         return (
           <group key={agent._id}>
             <CubicleModel
               position={cubiclePos}
               color={resolvedColor}
-              isActive={agent.status === "active"}
-              hasAgent={true}
+              isActive={agent.status === "active" && !isMobile}
+              hasAgent={!isMobile}
             />
-            <AgentFigure
-              status={agent.status as "active" | "idle" | "offline"}
-              color={resolvedColor}
-              position={[cubiclePos[0], 0, cubiclePos[2] + 0.45]}
-              onClick={() => onAgentClick?.(agent._id)}
-            />
-            <AgentLabel
-              name={agent.name}
-              avatar={agent.avatar}
-              status={agent.status as "active" | "idle" | "offline"}
-              color={resolvedColor}
-              position={[cubiclePos[0], 0, cubiclePos[2] + 0.45]}
-              hidden={hideLabels}
-            />
+            {/* Only render agent figure at cubicle if not currently mobile */}
+            {!isMobile && (
+              <>
+                <AgentFigure
+                  status={agent.status as "active" | "idle" | "offline"}
+                  color={resolvedColor}
+                  position={[cubiclePos[0], 0, cubiclePos[2] + 0.45]}
+                  onClick={() => onAgentClick?.(agent._id)}
+                />
+                <AgentLabel
+                  name={agent.name}
+                  avatar={agent.avatar}
+                  status={agent.status as "active" | "idle" | "offline"}
+                  color={resolvedColor}
+                  position={[cubiclePos[0], 0, cubiclePos[2] + 0.45]}
+                  hidden={hideLabels}
+                />
+              </>
+            )}
           </group>
         );
       })}

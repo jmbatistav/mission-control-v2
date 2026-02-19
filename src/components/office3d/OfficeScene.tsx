@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import OfficeFloor from "./OfficeFloor";
@@ -9,6 +9,8 @@ import BreakArea from "./BreakArea";
 import ManagerArea from "./ManagerArea";
 import DepartmentZone from "./DepartmentZone";
 import CameraController, { CameraControllerHandle } from "./CameraController";
+import WalkingAgent from "./WalkingAgent";
+import { useAgentStates, type AgentPhysicalState } from "./AgentStateManager";
 
 interface Agent {
   _id: string;
@@ -19,6 +21,14 @@ interface Agent {
   status: string;
   color: string;
   currentTask?: string;
+}
+
+interface Meeting {
+  _id: string;
+  title: string;
+  participants: string[];
+  location: string;
+  status: string;
 }
 
 const colorMap: Record<string, string> = {
@@ -43,23 +53,62 @@ const departmentLayout: Record<string, { position: [number, number, number]; emo
 
 interface OfficeSceneProps {
   agents: Agent[];
+  activeMeetings?: Meeting[];
   onAgentClick: (id: string) => void;
   selectedId?: string | null;
 }
 
-export default function OfficeScene({ agents, onAgentClick, selectedId }: OfficeSceneProps) {
+export default function OfficeScene({ agents, activeMeetings = [], onAgentClick, selectedId }: OfficeSceneProps) {
   const cameraRef = useRef<CameraControllerHandle>(null);
 
   // Group agents by function
-  const grouped: Record<string, Agent[]> = {};
-  for (const agent of agents) {
-    const fn = agent.function;
-    if (!grouped[fn]) grouped[fn] = [];
-    grouped[fn].push(agent);
-  }
+  const grouped = useMemo(() => {
+    const g: Record<string, Agent[]> = {};
+    for (const agent of agents) {
+      const fn = agent.function;
+      if (!g[fn]) g[fn] = [];
+      g[fn].push(agent);
+    }
+    return g;
+  }, [agents]);
 
   const leadershipAgents = grouped["leadership"] || [];
   const leader = leadershipAgents[0];
+
+  // Active meeting info for meeting room display
+  const activeMeeting = activeMeetings.find((m) => m.status === "in_progress");
+
+  // Agent physical states from state manager
+  const agentStates = useAgentStates({
+    agents,
+    activeMeetings,
+    deptGroups: grouped,
+  });
+
+  // Create a map of agentId -> physical state for quick lookup
+  const stateMap = useMemo(() => {
+    const map = new Map<string, AgentPhysicalState>();
+    for (const s of agentStates) {
+      map.set(s.agentId, s);
+    }
+    return map;
+  }, [agentStates]);
+
+  // Set of agent IDs currently walking or in meeting (render separately, not in cubicle)
+  const mobilAgentIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of agentStates) {
+      if (
+        s.animState === "walking" ||
+        s.animState === "in_meeting" ||
+        s.animState === "sitting_down" ||
+        s.animState === "standing_up"
+      ) {
+        set.add(s.agentId);
+      }
+    }
+    return set;
+  }, [agentStates]);
 
   const handleAgentClick = useCallback(
     (id: string) => {
@@ -134,10 +183,15 @@ export default function OfficeScene({ agents, onAgentClick, selectedId }: Office
         resolvedColor={leader ? (colorMap[leader.color] || "#6b7280") : "#6b7280"}
         onAgentClick={handleAgentClick}
         hideLabels={!!selectedId}
+        hideFigure={leader ? mobilAgentIds.has(leader._id) : false}
       />
 
       {/* Meeting room - top right */}
-      <MeetingRoom position={[8, 0, -4]} />
+      <MeetingRoom
+        position={[8, 0, -4]}
+        activeMeetingTitle={activeMeeting?.title}
+        isActive={!!activeMeeting}
+      />
 
       {/* Department zones */}
       {Object.entries(departmentLayout).map(([fn, config]) => {
@@ -152,9 +206,35 @@ export default function OfficeScene({ agents, onAgentClick, selectedId }: Office
             basePosition={config.position}
             onAgentClick={handleAgentClick}
             hideLabels={!!selectedId}
+            mobileAgentIds={mobilAgentIds}
           />
         );
       })}
+
+      {/* Walking / in-meeting agents rendered independently */}
+      {agentStates
+        .filter((s) => mobilAgentIds.has(s.agentId))
+        .map((s) => {
+          const agent = agents.find((a) => a._id === s.agentId);
+          if (!agent) return null;
+          const resolvedColor = colorMap[agent.color] || "#6b7280";
+          return (
+            <WalkingAgent
+              key={agent._id}
+              agentId={agent._id}
+              name={agent.name}
+              avatar={agent.avatar}
+              status={agent.status as "active" | "idle" | "offline"}
+              color={resolvedColor}
+              animState={s.animState}
+              path={s.path}
+              homePosition={s.homePosition}
+              meetingSeatRotation={s.meetingSeatRotation}
+              hideLabels={!!selectedId}
+              onClick={() => handleAgentClick(agent._id)}
+            />
+          );
+        })}
 
       {/* Break area - bottom right */}
       <BreakArea position={[8, 0, 10]} />

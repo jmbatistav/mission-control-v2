@@ -20,9 +20,11 @@ interface ManagerAreaProps {
   resolvedColor: string;
   onAgentClick?: (id: string) => void;
   hideLabels?: boolean;
+  /** Whether agent figure should be hidden (currently walking/in meeting) */
+  hideFigure?: boolean;
 }
 
-export default function ManagerArea({ position, agent, resolvedColor, onAgentClick, hideLabels }: ManagerAreaProps) {
+export default function ManagerArea({ position, agent, resolvedColor, onAgentClick, hideLabels, hideFigure }: ManagerAreaProps) {
   return (
     <group position={position}>
       {/* Label */}
@@ -48,12 +50,12 @@ export default function ManagerArea({ position, agent, resolvedColor, onAgentCli
       <CubicleModel
         position={[0, 0, 0]}
         color={resolvedColor}
-        isActive={agent?.status === "active"}
-        hasAgent={!!agent}
+        isActive={agent?.status === "active" && !hideFigure}
+        hasAgent={!!agent && !hideFigure}
         isManager
       />
 
-      {agent && (
+      {agent && !hideFigure && (
         <>
           <AgentFigure
             status={agent.status as "active" | "idle" | "offline"}
