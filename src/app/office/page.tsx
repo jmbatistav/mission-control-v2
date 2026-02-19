@@ -1,230 +1,342 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import Modal from "@/components/shared/Modal";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 type Status = "active" | "idle" | "offline";
-type TeamFunction = "engineering" | "design" | "product" | "operations" | "leadership";
 
-const statusInfo: Record<Status, { dot: string; label: string; glow: string; deskLight: string }> = {
-  active: { dot: "bg-emerald-500", label: "Working", glow: "shadow-emerald-500/30 shadow-lg", deskLight: "bg-emerald-500/20" },
-  idle: { dot: "bg-amber-500", label: "Idle", glow: "shadow-amber-500/20 shadow-md", deskLight: "bg-amber-500/10" },
-  offline: { dot: "bg-gray-600", label: "Offline", glow: "", deskLight: "bg-gray-800/50" },
+const statusInfo: Record<Status, { label: string; color: string }> = {
+  active: { label: "Working", color: "#10b981" },
+  idle: { label: "Idle", color: "#f59e0b" },
+  offline: { label: "Offline", color: "#6b7280" },
 };
 
-const colorGradients: Record<string, { chair: string; monitor: string; accent: string }> = {
-  cyan: { chair: "from-cyan-700 to-cyan-900", monitor: "border-cyan-500/40", accent: "bg-cyan-500" },
-  blue: { chair: "from-blue-700 to-blue-900", monitor: "border-blue-500/40", accent: "bg-blue-500" },
-  indigo: { chair: "from-indigo-700 to-indigo-900", monitor: "border-indigo-500/40", accent: "bg-indigo-500" },
-  amber: { chair: "from-amber-700 to-amber-900", monitor: "border-amber-500/40", accent: "bg-amber-500" },
-  orange: { chair: "from-orange-700 to-orange-900", monitor: "border-orange-500/40", accent: "bg-orange-500" },
-  emerald: { chair: "from-emerald-700 to-emerald-900", monitor: "border-emerald-500/40", accent: "bg-emerald-500" },
-  pink: { chair: "from-pink-700 to-pink-900", monitor: "border-pink-500/40", accent: "bg-pink-500" },
-  violet: { chair: "from-violet-700 to-violet-900", monitor: "border-violet-500/40", accent: "bg-violet-500" },
-  teal: { chair: "from-teal-700 to-teal-900", monitor: "border-teal-500/40", accent: "bg-teal-500" },
-};
-
-const funcLabels: Record<TeamFunction, string> = {
-  leadership: "👑 Leadership",
-  engineering: "⚡ Engineering",
-  design: "🎨 Design",
-  product: "📋 Product",
-  operations: "🛠️ Operations",
-};
-
-/* ─── Desk / Workstation Component ─── */
-function Workstation({
+/* ─── Isometric Cubicle ─── */
+function Cubicle({
   member,
+  position,
   onClick,
 }: {
-  member: {
-    _id: Id<"teamMembers">;
-    name: string;
-    role: string;
-    avatar: string;
-    color: string;
-    status: Status;
-    function: TeamFunction;
-    currentTask?: string;
-    model?: string;
-  };
+  member: any;
+  position: { x: number; y: number };
   onClick: () => void;
 }) {
-  const si = statusInfo[member.status];
-  const colors = colorGradients[member.color] || colorGradients.blue;
   const isWorking = member.status === "active";
   const isIdle = member.status === "idle";
+  const isOffline = member.status === "offline";
+
+  // Typing animation state
+  const [typingFrame, setTypingFrame] = useState(0);
+  const [headBob, setHeadBob] = useState(0);
+  const [screenLine, setScreenLine] = useState(0);
+
+  useEffect(() => {
+    if (!isWorking) return;
+    const typing = setInterval(() => {
+      setTypingFrame((f) => (f + 1) % 4);
+      setHeadBob((h) => (h + 1) % 6);
+      setScreenLine((s) => (s + 1) % 8);
+    }, 400);
+    return () => clearInterval(typing);
+  }, [isWorking]);
+
+  useEffect(() => {
+    if (!isIdle) return;
+    const idle = setInterval(() => {
+      setHeadBob((h) => (h + 1) % 10);
+    }, 2000);
+    return () => clearInterval(idle);
+  }, [isIdle]);
+
+  const colorAccent = member.color === "cyan" ? "#06b6d4" : member.color === "blue" ? "#3b82f6" : member.color === "amber" ? "#f59e0b" : member.color === "emerald" ? "#10b981" : member.color === "pink" ? "#ec4899" : member.color === "violet" ? "#8b5cf6" : member.color === "orange" ? "#f97316" : member.color === "indigo" ? "#6366f1" : member.color === "teal" ? "#14b8a6" : "#9ca3af";
 
   return (
-    <button
+    <g
+      transform={`translate(${position.x}, ${position.y})`}
       onClick={onClick}
-      className={`relative group focus:outline-none transition-transform hover:scale-105 ${member.status === "offline" ? "opacity-50" : ""}`}
+      style={{ cursor: "pointer" }}
+      className="group"
     >
-      {/* Desk surface */}
-      <div className="w-48 h-56 relative">
-        {/* Ambient glow under desk when active */}
-        {isWorking && (
-          <div className="absolute -inset-2 bg-gradient-to-t from-transparent via-transparent to-transparent rounded-2xl animate-pulse opacity-30"
-            style={{ background: `radial-gradient(ellipse at center bottom, ${member.color === "cyan" ? "#06b6d4" : member.color === "blue" ? "#3b82f6" : member.color === "amber" ? "#f59e0b" : member.color === "emerald" ? "#10b981" : member.color === "pink" ? "#ec4899" : member.color === "violet" ? "#8b5cf6" : member.color === "orange" ? "#f97316" : member.color === "indigo" ? "#6366f1" : member.color === "teal" ? "#14b8a6" : "#6b7280"}20, transparent 70%)` }}
+      {/* Cubicle floor shadow */}
+      <path d="M0,40 L80,0 L160,40 L80,80 Z" fill="rgba(0,0,0,0.2)" />
+
+      {/* Cubicle floor */}
+      <path d="M0,38 L80,-2 L160,38 L80,78 Z" fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
+
+      {/* Back wall left */}
+      <path d="M0,38 L80,-2 L80,-52 L0,-12 Z" fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
+
+      {/* Back wall right */}
+      <path d="M80,-2 L160,38 L160,-12 L80,-52 Z" fill="#1a2332" stroke="#334155" strokeWidth="0.5" />
+
+      {/* Wall decorations - poster/whiteboard on left wall */}
+      <path d="M15,0 L50,-18 L50,-38 L15,-20 Z" fill="#0f172a" stroke="#475569" strokeWidth="0.3" />
+      {isWorking && (
+        <>
+          <line x1="20" y1="-8" x2="45" y2="-20" stroke={colorAccent} strokeWidth="0.5" opacity="0.5" />
+          <line x1="20" y1="-4" x2="40" y2="-14" stroke={colorAccent} strokeWidth="0.5" opacity="0.3" />
+          <line x1="20" y1="0" x2="35" y2="-8" stroke={colorAccent} strokeWidth="0.5" opacity="0.4" />
+        </>
+      )}
+
+      {/* Shelf on right wall */}
+      <path d="M110,-5 L145,-23 L145,-26 L110,-8 Z" fill="#374151" stroke="#475569" strokeWidth="0.3" />
+      {/* Items on shelf */}
+      <circle cx="120" cy="-8" r="2" fill={colorAccent} opacity="0.6" />
+      <rect x="130" y="-12" width="4" height="5" rx="0.5" fill="#4b5563" transform="skewY(-27)" />
+
+      {/* Desk - isometric box */}
+      {/* Desk top */}
+      <path d="M25,35 L80,8 L135,35 L80,62 Z" fill="#44403c" stroke="#57534e" strokeWidth="0.5" />
+      {/* Desk front left */}
+      <path d="M25,35 L80,62 L80,72 L25,45 Z" fill="#3a3733" stroke="#57534e" strokeWidth="0.3" />
+      {/* Desk front right */}
+      <path d="M80,62 L135,35 L135,45 L80,72 Z" fill="#332f2b" stroke="#57534e" strokeWidth="0.3" />
+      {/* Desk drawer */}
+      <path d="M90,62 L120,47 L120,53 L90,68 Z" fill="#2c2926" stroke="#57534e" strokeWidth="0.3" />
+      <circle cx="105" cy="55" r="1" fill="#78716c" />
+
+      {/* Monitor - isometric */}
+      {/* Monitor stand */}
+      <path d="M75,28 L85,23 L85,30 L75,35 Z" fill="#1f2937" />
+      {/* Monitor base */}
+      <path d="M70,35 L80,30 L90,35 L80,40 Z" fill="#374151" />
+      {/* Monitor screen frame */}
+      <path d="M55,10 L80,-2 L105,10 L80,22 Z" fill="#111827" stroke="#374151" strokeWidth="1" />
+      {/* Screen content */}
+      {isWorking ? (
+        <g>
+          {/* Active screen with code */}
+          <path d="M58,10 L80,0 L102,10 L80,20 Z" fill="#0c1222" />
+          {/* Code lines that animate */}
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <line
+              key={i}
+              x1={62 + i * 1.5}
+              y1={6 + i * 2 - (i > screenLine ? 0 : 0.5)}
+              x2={62 + i * 1.5 + (i === screenLine ? 18 : 12 + (i % 3) * 4)}
+              y2={6 + i * 2 - (i > screenLine ? 0 : 0.5) - ((i === screenLine ? 18 : 12 + (i % 3) * 4) * 0.5)}
+              stroke={i === screenLine ? colorAccent : i % 2 === 0 ? "#4b5563" : "#374151"}
+              strokeWidth="1"
+              opacity={i === screenLine ? 0.9 : 0.5}
+            />
+          ))}
+          {/* Cursor blink */}
+          <rect
+            x={62 + screenLine * 1.5 + 19}
+            y={5 + screenLine * 2 - 9}
+            width="1.5"
+            height="3"
+            fill={colorAccent}
+            opacity={typingFrame % 2 === 0 ? 1 : 0.2}
           />
+          {/* Screen glow */}
+          <path d="M58,10 L80,0 L102,10 L80,20 Z" fill={colorAccent} opacity="0.03" />
+        </g>
+      ) : isIdle ? (
+        <g>
+          {/* Screensaver */}
+          <path d="M58,10 L80,0 L102,10 L80,20 Z" fill="#0c1222" />
+          <circle
+            cx={75 + Math.sin(headBob * 0.6) * 5}
+            cy={10 + Math.cos(headBob * 0.4) * 3}
+            r="3"
+            fill={colorAccent}
+            opacity="0.15"
+          />
+        </g>
+      ) : (
+        /* Off screen */
+        <path d="M58,10 L80,0 L102,10 L80,20 Z" fill="#030712" />
+      )}
+      {/* Monitor power LED */}
+      <circle cx="80" cy="21" r="0.8" fill={statusInfo[member.status].color} opacity={isWorking ? 1 : 0.5} />
+
+      {/* Keyboard */}
+      <path
+        d="M65,32 L80,25 L95,32 L80,39 Z"
+        fill="#1f2937"
+        stroke="#374151"
+        strokeWidth="0.3"
+      />
+      {/* Keys animation */}
+      {isWorking && (
+        <g>
+          <rect x={72 + typingFrame * 2} y={29 - typingFrame} width="2" height="1" fill="#4b5563" rx="0.2" transform={`skewY(-30) skewX(0)`} opacity={0.8} />
+        </g>
+      )}
+
+      {/* Mouse */}
+      <ellipse cx="100" cy="30" rx="3" ry="2" fill="#1f2937" stroke="#374151" strokeWidth="0.3" transform="rotate(-30, 100, 30)" />
+
+      {/* Coffee mug */}
+      <g transform="translate(40, 25)">
+        <path d="M0,0 L3,-1.5 L6,0 L3,1.5 Z" fill="#78716c" />
+        <path d="M0,0 L3,1.5 L3,5 L0,3.5 Z" fill="#57534e" />
+        <path d="M3,1.5 L6,0 L6,3.5 L3,5 Z" fill="#44403c" />
+        {/* Steam */}
+        {isWorking && (
+          <>
+            <path d={`M2,-2 Q3,${-4 - (typingFrame % 2)} 2,-6`} stroke="white" strokeWidth="0.3" opacity="0.15" fill="none" />
+            <path d={`M4,-2 Q3,${-5 - ((typingFrame + 1) % 2)} 4,-7`} stroke="white" strokeWidth="0.3" opacity="0.1" fill="none" />
+          </>
+        )}
+      </g>
+
+      {/* Personal item - plant or figurine based on agent */}
+      <g transform="translate(115, 20)">
+        <path d="M0,0 L4,-2 L8,0 L4,2 Z" fill="#44403c" />
+        <circle cx="4" cy="-3" r="2.5" fill="#166534" opacity="0.7" />
+        <circle cx="3" cy="-4.5" r="1.5" fill="#15803d" opacity="0.6" />
+        <line x1="4" y1="0" x2="4" y2="-2" stroke="#4d7c0f" strokeWidth="0.5" />
+      </g>
+
+      {/* Chair - isometric */}
+      <g transform={`translate(70, ${42 + (isWorking ? Math.sin(headBob * 1.2) * 0.3 : 0)})`}>
+        {/* Chair seat */}
+        <path d="M0,0 L15,-7.5 L30,0 L15,7.5 Z" fill="#1e293b" stroke="#334155" strokeWidth="0.3" />
+        {/* Chair back */}
+        <path d="M0,0 L15,-7.5 L15,-18 L0,-10.5 Z" fill="#1e293b" stroke="#334155" strokeWidth="0.3" />
+        {/* Chair wheels */}
+        <circle cx="5" cy="4" r="1.2" fill="#374151" />
+        <circle cx="25" cy="4" r="1.2" fill="#374151" />
+        <circle cx="15" cy="8" r="1.2" fill="#374151" />
+      </g>
+
+      {/* Agent body - sitting at desk */}
+      <g transform={`translate(73, ${isWorking ? 14 + Math.sin(headBob * 0.8) * 0.5 : isIdle ? 14 + (headBob === 0 ? -1 : 0) : 16})`}>
+        {/* Body/torso */}
+        <path d="M0,12 L12,6 L24,12 L12,18 Z" fill="#1e293b" />
+        <path d="M0,12 L12,18 L12,26 L0,20 Z" fill="#0f172a" />
+        <path d="M12,18 L24,12 L24,20 L12,26 Z" fill="#111827" />
+
+        {/* Head */}
+        <circle cx="12" cy="4" r="7" fill="#fbbf24" opacity="0.9" />
+        {/* Face features */}
+        <circle cx="9" cy="3" r="1" fill="#0f172a" />
+        <circle cx="15" cy="3" r="1" fill="#0f172a" />
+        {isWorking ? (
+          /* Focused expression */
+          <line x1="9" y1="7" x2="15" y2="7" stroke="#0f172a" strokeWidth="0.8" strokeLinecap="round" />
+        ) : isIdle ? (
+          /* Relaxed smile */
+          <path d="M9,6.5 Q12,9 15,6.5" stroke="#0f172a" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+        ) : (
+          /* Sleeping */
+          <>
+            <line x1="8" y1="3" x2="11" y2="3" stroke="#0f172a" strokeWidth="1" strokeLinecap="round" />
+            <line x1="13" y1="3" x2="16" y2="3" stroke="#0f172a" strokeWidth="1" strokeLinecap="round" />
+            <text x="20" y="-2" fontSize="6" fill="white" opacity="0.3">z</text>
+            <text x="24" y="-6" fontSize="4" fill="white" opacity="0.2">z</text>
+          </>
         )}
 
-        {/* Desk */}
-        <div className="absolute bottom-0 left-2 right-2 h-20 bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg border border-gray-600/50 shadow-md">
-          {/* Desk legs */}
-          <div className="absolute -bottom-3 left-3 w-2 h-3 bg-gray-600 rounded-b" />
-          <div className="absolute -bottom-3 right-3 w-2 h-3 bg-gray-600 rounded-b" />
-          {/* Desk items */}
-          <div className="absolute top-2 left-3 w-6 h-4 bg-gray-600/50 rounded-sm" title="Keyboard" />
-          <div className="absolute top-3 right-3 w-3 h-3 bg-gray-600/30 rounded-full" title="Mouse" />
-          {/* Coffee mug (only if active/idle) */}
-          {member.status !== "offline" && (
-            <div className="absolute top-1 right-10">
-              <div className="w-3 h-4 bg-gray-500/40 rounded-b-sm rounded-t-lg border border-gray-500/30" />
-              {isWorking && (
-                <div className="absolute -top-2 left-0.5 text-[6px] opacity-60 animate-bounce">☕</div>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Arms reaching to keyboard */}
+        {isWorking && (
+          <>
+            <line x1="3" y1="14" x2={-5 + (typingFrame % 2) * 2} y2="22" stroke="#fbbf24" strokeWidth="2.5" opacity="0.8" strokeLinecap="round" />
+            <line x1="21" y1="14" x2={29 - ((typingFrame + 1) % 2) * 2} y2="22" stroke="#fbbf24" strokeWidth="2.5" opacity="0.8" strokeLinecap="round" />
+          </>
+        )}
+        {isIdle && (
+          <>
+            <line x1="3" y1="14" x2="-2" y2="22" stroke="#fbbf24" strokeWidth="2.5" opacity="0.7" strokeLinecap="round" />
+            <line x1="21" y1="14" x2="26" y2="22" stroke="#fbbf24" strokeWidth="2.5" opacity="0.7" strokeLinecap="round" />
+          </>
+        )}
+      </g>
 
-        {/* Monitor */}
-        <div className={`absolute bottom-16 left-1/2 -translate-x-1/2 w-28 h-20 bg-gray-900 rounded-lg border-2 ${colors.monitor} ${si.glow} overflow-hidden`}>
-          {/* Monitor stand */}
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3 h-4 bg-gray-700" />
-          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-gray-700 rounded-full" />
+      {/* Agent emoji overlay on head */}
+      <text
+        x="84"
+        y={isWorking ? 20 + Math.sin(headBob * 0.8) * 0.5 : isIdle ? 20 + (headBob === 0 ? -1 : 0) : 22}
+        fontSize="12"
+        textAnchor="middle"
+        dominantBaseline="middle"
+      >
+        {member.avatar}
+      </text>
 
-          {/* Screen content */}
-          {member.status === "offline" ? (
-            <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-              <div className="w-2 h-2 bg-gray-700 rounded-full" />
-            </div>
-          ) : isWorking ? (
-            <div className="w-full h-full p-1.5 bg-gray-950">
-              {/* Fake code lines */}
-              <div className="space-y-1 animate-pulse">
-                <div className={`h-1 ${colors.accent} opacity-40 rounded w-[70%]`} />
-                <div className="h-1 bg-gray-600 opacity-30 rounded w-[90%]" />
-                <div className={`h-1 ${colors.accent} opacity-30 rounded w-[50%]`} />
-                <div className="h-1 bg-gray-600 opacity-30 rounded w-[80%]" />
-                <div className={`h-1 ${colors.accent} opacity-40 rounded w-[60%]`} />
-                <div className="h-1 bg-gray-600 opacity-20 rounded w-[45%]" />
-                <div className={`h-1 ${colors.accent} opacity-30 rounded w-[75%]`} />
-              </div>
-              {/* Blinking cursor */}
-              <div className="mt-1 flex items-center gap-0.5">
-                <div className={`w-1 h-2 ${colors.accent} opacity-80 animate-[pulse_1s_ease-in-out_infinite]`} />
-              </div>
-            </div>
-          ) : (
-            <div className="w-full h-full p-1.5 bg-gray-950 flex items-center justify-center">
-              {/* Screensaver / idle */}
-              <div className={`w-4 h-4 ${colors.accent} opacity-20 rounded-full animate-ping`} />
-            </div>
-          )}
-
-          {/* Monitor power LED */}
-          <div className={`absolute bottom-0.5 right-1 w-1 h-1 rounded-full ${si.dot} ${isWorking ? "animate-pulse" : ""}`} />
-        </div>
-
-        {/* Chair */}
-        <div className={`absolute bottom-20 left-1/2 -translate-x-1/2 w-14 h-8 bg-gradient-to-b ${colors.chair} rounded-t-xl rounded-b-lg border border-gray-600/30 shadow-inner`} />
-
-        {/* Agent Avatar (sitting in chair) */}
-        <div className={`absolute bottom-24 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-br ${colors.chair} flex items-center justify-center text-xl border-2 border-gray-600/50 ${isWorking ? "animate-[bounce_3s_ease-in-out_infinite]" : ""} z-10`}>
-          {member.avatar}
-        </div>
-
-        {/* Status indicator above head */}
-        <div className="absolute bottom-[152px] left-1/2 -translate-x-1/2 flex flex-col items-center">
-          <div className={`w-2.5 h-2.5 rounded-full ${si.dot} ${isWorking ? "animate-pulse" : ""} ring-2 ring-gray-950`} />
-        </div>
-
-        {/* Name plate on desk */}
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-800/90 px-2 py-0.5 rounded text-[10px] font-medium text-gray-300 border border-gray-700/50 whitespace-nowrap z-20">
+      {/* Name plate on cubicle wall */}
+      <g transform="translate(25, -15)">
+        <path d="M0,0 L30,-15 L60,0 L30,15 Z" fill="#0f172a" stroke={colorAccent} strokeWidth="0.5" opacity="0.9" />
+        <text x="30" y="2" fontSize="6" fill="white" textAnchor="middle" dominantBaseline="middle" fontWeight="bold" fontFamily="monospace">
           {member.name}
-        </div>
-      </div>
+        </text>
+      </g>
 
-      {/* Hover tooltip */}
-      <div className="absolute -top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none">
-        <div className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 shadow-xl whitespace-nowrap">
-          <p className="text-xs font-semibold text-gray-200">{member.name}</p>
-          <p className="text-[10px] text-gray-400">{member.role}</p>
-          {member.currentTask && (
-            <p className="text-[10px] text-blue-400 mt-1 max-w-[180px] truncate">📌 {member.currentTask}</p>
-          )}
-          <div className="flex items-center gap-1 mt-1">
-            <span className={`w-1.5 h-1.5 rounded-full ${si.dot}`} />
-            <span className="text-[10px] text-gray-500">{si.label}</span>
-          </div>
-        </div>
-      </div>
-    </button>
+      {/* Status indicator */}
+      <circle cx="80" cy="-20" r="4" fill={statusInfo[member.status].color} opacity={isWorking ? 1 : 0.6}>
+        {isWorking && (
+          <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+        )}
+      </circle>
+      <circle cx="80" cy="-20" r="6" fill="none" stroke={statusInfo[member.status].color} strokeWidth="0.5" opacity={isWorking ? 0.4 : 0}>
+        {isWorking && (
+          <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
+        )}
+      </circle>
+
+      {/* Current task bubble (on hover via CSS) */}
+      {member.currentTask && (
+        <g className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ transition: "opacity 0.3s" }}>
+          <rect x="20" y="-55" width="120" height="25" rx="4" fill="#1e293b" stroke="#334155" strokeWidth="0.5" />
+          <text x="80" y="-46" fontSize="5" fill="#94a3b8" textAnchor="middle" dominantBaseline="middle">
+            📌 {member.currentTask.slice(0, 35)}{member.currentTask.length > 35 ? "..." : ""}
+          </text>
+          {/* Arrow */}
+          <path d="M78,-30 L80,-26 L82,-30" fill="#1e293b" />
+        </g>
+      )}
+
+      {/* Ambient desk lamp glow */}
+      {isWorking && (
+        <ellipse cx="80" cy="35" rx="40" ry="15" fill={colorAccent} opacity="0.02">
+          <animate attributeName="opacity" values="0.02;0.04;0.02" dur="3s" repeatCount="indefinite" />
+        </ellipse>
+      )}
+    </g>
   );
 }
 
-/* ─── Status Bar Component ─── */
-function StatusBar({ members }: { members: any[] }) {
-  const active = members.filter((m) => m.status === "active").length;
-  const idle = members.filter((m) => m.status === "idle").length;
-  const offline = members.filter((m) => m.status === "offline").length;
-
+/* ─── Office Decorations ─── */
+function WaterCooler({ x, y }: { x: number; y: number }) {
   return (
-    <div className="flex items-center gap-6 bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-xl px-6 py-3">
-      <div className="flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="text-sm text-gray-300"><span className="font-bold text-emerald-400">{active}</span> Working</span>
-      </div>
-      <div className="w-px h-4 bg-gray-700" />
-      <div className="flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-        <span className="text-sm text-gray-300"><span className="font-bold text-amber-400">{idle}</span> Idle</span>
-      </div>
-      <div className="w-px h-4 bg-gray-700" />
-      <div className="flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-gray-600" />
-        <span className="text-sm text-gray-300"><span className="font-bold text-gray-400">{offline}</span> Offline</span>
-      </div>
-      <div className="flex-1" />
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="text-xs text-gray-500">Office Live</span>
-      </div>
-    </div>
+    <g transform={`translate(${x}, ${y})`}>
+      <path d="M0,0 L10,-5 L20,0 L10,5 Z" fill="#1e3a5f" />
+      <path d="M0,0 L10,5 L10,15 L0,10 Z" fill="#1e3a5f" stroke="#2563eb" strokeWidth="0.3" />
+      <path d="M10,5 L20,0 L20,10 L10,15 Z" fill="#172e4a" stroke="#2563eb" strokeWidth="0.3" />
+      <path d="M3,-5 L10,-8.5 L17,-5 L10,-1.5 Z" fill="#60a5fa" opacity="0.4" />
+      <text x="10" y="-12" fontSize="8" textAnchor="middle">🚰</text>
+    </g>
   );
 }
 
-/* ─── Office Floor ─── */
-function OfficeZone({
-  title,
-  emoji,
-  borderColor,
-  children,
-}: {
-  title: string;
-  emoji: string;
-  borderColor: string;
-  children: React.ReactNode;
-}) {
+function Plant({ x, y, size = 1 }: { x: number; y: number; size?: number }) {
   return (
-    <div className={`border ${borderColor} rounded-2xl p-6 bg-gray-900/30 backdrop-blur-sm`}>
-      {/* Zone sign */}
-      <div className="flex items-center gap-2 mb-6">
-        <div className={`px-3 py-1 rounded-lg bg-gray-800/80 border ${borderColor}`}>
-          <span className="text-sm">{emoji}</span>
-          <span className="text-xs font-semibold text-gray-300 ml-2">{title}</span>
-        </div>
-        <div className={`flex-1 h-px ${borderColor.replace("border-", "bg-").replace("/30", "/20")}`} />
-      </div>
-      {/* Desks */}
-      <div className="flex flex-wrap gap-6 justify-center">
-        {children}
-      </div>
-    </div>
+    <g transform={`translate(${x}, ${y}) scale(${size})`}>
+      <path d="M0,0 L8,-4 L16,0 L8,4 Z" fill="#44403c" />
+      <path d="M0,0 L8,4 L8,8 L0,4 Z" fill="#3a3733" />
+      <path d="M8,4 L16,0 L16,4 L8,8 Z" fill="#332f2b" />
+      <circle cx="8" cy="-4" r="5" fill="#166534" opacity="0.7" />
+      <circle cx="6" cy="-7" r="3.5" fill="#15803d" opacity="0.6" />
+      <circle cx="11" cy="-6" r="3" fill="#166534" opacity="0.5" />
+    </g>
+  );
+}
+
+function FloorTile({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
+  return (
+    <path
+      d={`M${x},${y} L${x + w / 2},${y - h / 2} L${x + w},${y} L${x + w / 2},${y + h / 2} Z`}
+      fill="none"
+      stroke="#1e293b"
+      strokeWidth="0.3"
+      opacity="0.3"
+    />
   );
 }
 
@@ -233,21 +345,47 @@ export default function OfficePage() {
   const members = useQuery(api.team.list) ?? [];
   const seedTeam = useMutation(api.team.seed);
   const [selectedId, setSelectedId] = useState<Id<"teamMembers"> | null>(null);
-
   const selectedMember = selectedId ? members.find((m) => m._id === selectedId) : null;
 
-  const leadership = members.filter((m) => m.function === "leadership");
-  const engineering = members.filter((m) => m.function === "engineering");
-  const design = members.filter((m) => m.function === "design");
-  const product = members.filter((m) => m.function === "product");
-  const operations = members.filter((m) => m.function === "operations");
+  // Layout positions for cubicles in isometric grid
+  const getPosition = (index: number, func: string) => {
+    const positions: Record<string, { x: number; y: number }[]> = {
+      leadership: [{ x: 380, y: 20 }],
+      engineering: [
+        { x: 150, y: 140 },
+        { x: 350, y: 140 },
+        { x: 550, y: 140 },
+      ],
+      design: [{ x: 150, y: 280 }],
+      product: [
+        { x: 350, y: 280 },
+        { x: 550, y: 280 },
+      ],
+      operations: [
+        { x: 150, y: 420 },
+        { x: 350, y: 420 },
+      ],
+    };
+    const funcPositions = positions[func] || [];
+    return funcPositions[index] || { x: 100 + index * 200, y: 400 };
+  };
+
+  const grouped: Record<string, any[]> = {};
+  for (const m of members) {
+    if (!grouped[m.function]) grouped[m.function] = [];
+    grouped[m.function].push(m);
+  }
+
+  const activeCount = members.filter((m) => m.status === "active").length;
+  const idleCount = members.filter((m) => m.status === "idle").length;
+  const offlineCount = members.filter((m) => m.status === "offline").length;
 
   if (members.length === 0) {
     return (
       <div className="max-w-6xl mx-auto flex flex-col items-center justify-center h-[70vh]">
         <div className="text-8xl mb-6 animate-bounce">🏢</div>
         <h2 className="text-xl font-bold text-gray-200 mb-2">The office is empty</h2>
-        <p className="text-sm text-gray-500 mb-6">Initialize the team to populate the office</p>
+        <p className="text-sm text-gray-500 mb-6">Initialize the team to open the office</p>
         <button onClick={() => seedTeam({})} className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors">
           🚀 Open the Office
         </button>
@@ -256,121 +394,97 @@ export default function OfficePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
+    <div className="max-w-7xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">🏢 Digital Office</h1>
-          <p className="text-sm text-gray-500 mt-1">Real-time view of your team at work</p>
+          <p className="text-sm text-gray-500 mt-1">Cleverwave HQ — Live View</p>
         </div>
-      </div>
-
-      {/* Status Bar */}
-      <StatusBar members={members} />
-
-      {/* Office Floor Plan */}
-      <div className="relative bg-gradient-to-b from-gray-950 via-gray-900/50 to-gray-950 rounded-2xl border border-gray-800 p-8 space-y-8 overflow-hidden">
-        {/* Floor grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        {/* Floor label */}
-        <div className="relative text-center mb-4">
-          <span className="text-xs text-gray-600 tracking-[0.3em] uppercase">Cleverwave HQ — Floor 1</span>
-        </div>
-
-        {/* Leadership - Center top (CTO office) */}
-        {leadership.length > 0 && (
-          <OfficeZone title="CTO Office" emoji="👑" borderColor="border-cyan-500/30">
-            {leadership.map((m) => (
-              <Workstation key={m._id} member={m as any} onClick={() => setSelectedId(m._id)} />
-            ))}
-          </OfficeZone>
-        )}
-
-        {/* Engineering Bay */}
-        {engineering.length > 0 && (
-          <OfficeZone title="Engineering Bay" emoji="⚡" borderColor="border-blue-500/30">
-            {engineering.map((m) => (
-              <Workstation key={m._id} member={m as any} onClick={() => setSelectedId(m._id)} />
-            ))}
-          </OfficeZone>
-        )}
-
-        {/* Bottom row: Design Studio + Product Lab + Ops Center */}
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6">
-          {design.length > 0 && (
-            <OfficeZone title="Design Studio" emoji="🎨" borderColor="border-pink-500/30">
-              {design.map((m) => (
-                <Workstation key={m._id} member={m as any} onClick={() => setSelectedId(m._id)} />
-              ))}
-            </OfficeZone>
-          )}
-          {product.length > 0 && (
-            <OfficeZone title="Product Lab" emoji="📋" borderColor="border-violet-500/30">
-              {product.map((m) => (
-                <Workstation key={m._id} member={m as any} onClick={() => setSelectedId(m._id)} />
-              ))}
-            </OfficeZone>
-          )}
-          {operations.length > 0 && (
-            <OfficeZone title="Ops Center" emoji="🛠️" borderColor="border-orange-500/30">
-              {operations.map((m) => (
-                <Workstation key={m._id} member={m as any} onClick={() => setSelectedId(m._id)} />
-              ))}
-            </OfficeZone>
-          )}
-        </div>
-
-        {/* Water cooler / break area decoration */}
-        <div className="relative flex justify-center gap-8 py-4">
-          <div className="text-center opacity-40">
-            <span className="text-2xl">🚰</span>
-            <p className="text-[9px] text-gray-600 mt-1">Water Cooler</p>
+        <div className="flex items-center gap-4 bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-xl px-5 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-sm"><span className="font-bold text-emerald-400">{activeCount}</span> <span className="text-gray-500">Working</span></span>
           </div>
-          <div className="text-center opacity-40">
-            <span className="text-2xl">🪴</span>
-            <p className="text-[9px] text-gray-600 mt-1">Plant</p>
+          <div className="w-px h-4 bg-gray-700" />
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+            <span className="text-sm"><span className="font-bold text-amber-400">{idleCount}</span> <span className="text-gray-500">Idle</span></span>
           </div>
-          <div className="text-center opacity-40">
-            <span className="text-2xl">☕</span>
-            <p className="text-[9px] text-gray-600 mt-1">Coffee Bar</p>
+          <div className="w-px h-4 bg-gray-700" />
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-gray-600" />
+            <span className="text-sm"><span className="font-bold text-gray-400">{offlineCount}</span> <span className="text-gray-500">Off</span></span>
           </div>
-          <div className="text-center opacity-40">
-            <span className="text-2xl">🪴</span>
-            <p className="text-[9px] text-gray-600 mt-1">Plant</p>
+          <div className="w-px h-4 bg-gray-700" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs text-gray-500">LIVE</span>
           </div>
         </div>
       </div>
 
-      {/* Quick Status Strip */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-        <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-3">Quick Status</h3>
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
-          {members.map((m) => {
-            const si = statusInfo[m.status];
-            return (
-              <button
-                key={m._id}
-                onClick={() => setSelectedId(m._id)}
-                className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
-              >
-                <div className="relative">
-                  <span className="text-2xl">{m.avatar}</span>
-                  <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${si.dot} ring-2 ring-gray-900 ${m.status === "active" ? "animate-pulse" : ""}`} />
-                </div>
-                <span className="text-[10px] text-gray-400 font-medium">{m.name}</span>
-                {m.currentTask && (
-                  <span className="text-[8px] text-blue-400 max-w-[80px] truncate">📌 {m.currentTask}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      {/* Isometric Office */}
+      <div className="bg-gradient-to-b from-gray-950 via-[#0a0f1a] to-gray-950 rounded-2xl border border-gray-800 overflow-hidden">
+        <svg
+          viewBox="0 0 900 580"
+          className="w-full h-auto"
+          style={{ minHeight: "500px" }}
+        >
+          <defs>
+            {/* Floor grid pattern */}
+            <pattern id="floorGrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M20,0 L40,10 L20,20 L0,10 Z" fill="none" stroke="#1e293b" strokeWidth="0.2" />
+            </pattern>
+            {/* Ambient light gradient */}
+            <radialGradient id="ambientLight" cx="50%" cy="30%" r="60%">
+              <stop offset="0%" stopColor="#1e293b" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          {/* Background floor */}
+          <rect x="0" y="0" width="900" height="580" fill="#020617" />
+          <rect x="0" y="0" width="900" height="580" fill="url(#ambientLight)" />
+
+          {/* Floor grid lines */}
+          {Array.from({ length: 25 }).map((_, i) => (
+            <line key={`h${i}`} x1="0" y1={i * 25} x2="900" y2={i * 25} stroke="#0f172a" strokeWidth="0.3" />
+          ))}
+          {Array.from({ length: 40 }).map((_, i) => (
+            <line key={`v${i}`} x1={i * 25} y1="0" x2={i * 25} y2="580" stroke="#0f172a" strokeWidth="0.3" />
+          ))}
+
+          {/* Department labels */}
+          <text x="450" y="15" fontSize="8" fill="#475569" textAnchor="middle" fontFamily="monospace" letterSpacing="3">👑 CTO OFFICE</text>
+          <text x="350" y="130" fontSize="7" fill="#475569" textAnchor="middle" fontFamily="monospace" letterSpacing="3">⚡ ENGINEERING BAY</text>
+          <text x="150" y="270" fontSize="7" fill="#475569" textAnchor="middle" fontFamily="monospace" letterSpacing="3">🎨 DESIGN</text>
+          <text x="450" y="270" fontSize="7" fill="#475569" textAnchor="middle" fontFamily="monospace" letterSpacing="3">📋 PRODUCT</text>
+          <text x="250" y="410" fontSize="7" fill="#475569" textAnchor="middle" fontFamily="monospace" letterSpacing="3">🛠️ OPS CENTER</text>
+
+          {/* Department dividers */}
+          <line x1="50" y1="120" x2="850" y2="120" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4,4" />
+          <line x1="50" y1="260" x2="850" y2="260" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4,4" />
+          <line x1="50" y1="400" x2="850" y2="400" stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4,4" />
+
+          {/* Office decorations */}
+          <WaterCooler x={750} y={300} />
+          <Plant x={50} y={180} size={1.2} />
+          <Plant x={800} y={180} />
+          <Plant x={700} y={450} size={1.1} />
+          <Plant x={50} y={450} />
+
+          {/* Render all cubicles */}
+          {Object.entries(grouped).map(([func, agents]) =>
+            agents.map((member, i) => (
+              <Cubicle
+                key={member._id}
+                member={member}
+                position={getPosition(i, func)}
+                onClick={() => setSelectedId(member._id)}
+              />
+            ))
+          )}
+        </svg>
       </div>
 
       {/* Agent Detail Modal */}
@@ -378,33 +492,28 @@ export default function OfficePage() {
         {selectedMember && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${colorGradients[selectedMember.color]?.chair || "from-gray-600 to-gray-800"} flex items-center justify-center text-3xl shadow-lg`}>
+              <div className="w-16 h-16 rounded-2xl bg-gray-800 flex items-center justify-center text-3xl shadow-lg border border-gray-700">
                 {selectedMember.avatar}
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-100">{selectedMember.name}</h3>
                 <p className="text-sm text-gray-400">{selectedMember.role}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`w-2 h-2 rounded-full ${statusInfo[selectedMember.status].dot} ${selectedMember.status === "active" ? "animate-pulse" : ""}`} />
+                  <span className={`w-2.5 h-2.5 rounded-full ${selectedMember.status === "active" ? "bg-emerald-500 animate-pulse" : selectedMember.status === "idle" ? "bg-amber-500" : "bg-gray-600"}`} />
                   <span className="text-xs text-gray-500">{statusInfo[selectedMember.status].label}</span>
-                  <span className="text-xs text-gray-600">·</span>
-                  <span className="text-xs text-gray-500">{funcLabels[selectedMember.function]}</span>
                 </div>
               </div>
             </div>
-
             <div className="bg-gray-800/50 rounded-xl p-4">
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Specialty</p>
               <p className="text-sm text-gray-300">{selectedMember.specialty}</p>
             </div>
-
             {selectedMember.currentTask && (
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
                 <p className="text-xs text-blue-400 uppercase tracking-wider mb-1">Current Task</p>
                 <p className="text-sm text-gray-200">{selectedMember.currentTask}</p>
               </div>
             )}
-
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Responsibilities</p>
               <div className="flex flex-wrap gap-1.5">
@@ -413,7 +522,6 @@ export default function OfficePage() {
                 ))}
               </div>
             </div>
-
             <div className="flex items-center justify-between pt-3 border-t border-gray-800">
               <span className="text-xs text-gray-500">Owned by <span className="text-gray-400">{selectedMember.owner}</span></span>
               {selectedMember.model && <span className="text-xs text-gray-600 font-mono">{selectedMember.model}</span>}
