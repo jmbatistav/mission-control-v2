@@ -209,6 +209,26 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
       world.addChild(agentContainer);
 
       // ─── Agent runtime map ───
+      const STATUS_COLORS: Record<string, number> = {
+        active: 0x10b981,
+        idle: 0xf59e0b,
+        offline: 0x6b7280,
+      };
+
+      const labelStyle = new TextStyle({
+        fontSize: 9,
+        fill: 0xe2e8f0,
+        fontFamily: "monospace",
+        align: "center",
+      });
+
+      const statusLabelStyle = new TextStyle({
+        fontSize: 7,
+        fill: 0x94a3b8,
+        fontFamily: "monospace",
+        align: "center",
+      });
+
       interface AgentRuntime {
         sprite: InstanceType<typeof Sprite>;
         movement: InstanceType<typeof AgentMovement>;
@@ -216,6 +236,7 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
         state: AgentPhysicalState2D;
         lastPath: string;
         selectionGlow: InstanceType<typeof Graphics>;
+        nameLabel: InstanceType<typeof Container>;
       }
 
       const runtimes = new Map<string, AgentRuntime>();
@@ -276,6 +297,7 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
           if (!currentIds.has(id)) {
             agentContainer.removeChild(rt.sprite);
             agentContainer.removeChild(rt.selectionGlow);
+            agentContainer.removeChild(rt.nameLabel);
             runtimes.delete(id);
           }
         }
@@ -302,10 +324,62 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
             agentContainer.addChild(glow);
             agentContainer.addChild(sprite);
 
+            // Name label container (emoji + name + status dot)
+            const nameLabel = new Container();
+
+            // Background pill
+            const labelBg = new Graphics();
+            labelBg.roundRect(-30, -8, 60, 22, 4);
+            labelBg.fill({ color: 0x0f172a, alpha: 0.85 });
+            labelBg.stroke({ width: 0.5, color: 0x334155 });
+            nameLabel.addChild(labelBg);
+
+            // Status dot
+            const statusDot = new Graphics();
+            statusDot.circle(0, 0, 3);
+            statusDot.fill(STATUS_COLORS[state.status] ?? 0x6b7280);
+            statusDot.x = -22;
+            statusDot.y = 3;
+            nameLabel.addChild(statusDot);
+
+            // Emoji text
+            const emojiText = new Text({
+              text: state.avatar,
+              style: new TextStyle({ fontSize: 10 }),
+            });
+            emojiText.anchor.set(0.5, 0.5);
+            emojiText.x = -14;
+            emojiText.y = 3;
+            nameLabel.addChild(emojiText);
+
+            // Name text
+            const nameText = new Text({
+              text: state.agentName,
+              style: labelStyle,
+            });
+            nameText.anchor.set(0, 0.5);
+            nameText.x = -6;
+            nameText.y = 3;
+            nameLabel.addChild(nameText);
+
+            // Adjust pill width to fit name
+            const textW = nameText.width;
+            labelBg.clear();
+            const pillW = Math.max(60, textW + 38);
+            labelBg.roundRect(-pillW / 2, -8, pillW, 22, 4);
+            labelBg.fill({ color: 0x0f172a, alpha: 0.85 });
+            labelBg.stroke({ width: 0.5, color: 0x334155 });
+            // Reposition elements centered
+            statusDot.x = -pillW / 2 + 8;
+            emojiText.x = -pillW / 2 + 18;
+            nameText.x = -pillW / 2 + 28;
+
+            agentContainer.addChild(nameLabel);
+
             sprite.x = movement.pixelX;
             sprite.y = movement.pixelY;
 
-            rt = { sprite, movement, anim, state, lastPath: "", selectionGlow: glow };
+            rt = { sprite, movement, anim, state, lastPath: "", selectionGlow: glow, nameLabel };
             runtimes.set(state.agentId, rt);
           }
 
@@ -351,6 +425,10 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
             rt.selectionGlow.x = rt.movement.pixelX - 4;
             rt.selectionGlow.y = rt.movement.pixelY - 4;
           }
+
+          // Position name label above sprite
+          rt.nameLabel.x = rt.movement.pixelX;
+          rt.nameLabel.y = rt.movement.pixelY - CELL_SIZE * 0.9;
 
           if (!stillMoving && rt.anim.state === "walking") {
             rt.anim.setState(rt.state.animState !== "walking" ? rt.state.animState : "idle");
