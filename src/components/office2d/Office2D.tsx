@@ -110,18 +110,35 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
       world.addChild(zoneGfx);
 
       for (const [, zone] of Object.entries(ZONES)) {
-        zoneGfx.rect(
+        // Zone floor tint
+        const zoneBg = new Graphics();
+        zoneBg.roundRect(
+          zone.x * CELL_SIZE + 1, zone.y * CELL_SIZE + 1,
+          zone.w * CELL_SIZE - 2, zone.h * CELL_SIZE - 2, 4
+        );
+        zoneBg.fill({ color: 0x111133, alpha: 0.3 });
+        world.addChild(zoneBg);
+
+        // Zone border
+        zoneGfx.roundRect(
           zone.x * CELL_SIZE, zone.y * CELL_SIZE,
-          zone.w * CELL_SIZE, zone.h * CELL_SIZE
+          zone.w * CELL_SIZE, zone.h * CELL_SIZE, 4
         );
         zoneGfx.stroke({ width: 1, color: 0x333355 });
 
+        // Zone label at TOP of zone (inside the reserved first row)
         const label = new Text({
           text: zone.label,
-          style: new TextStyle({ fontSize: 10, fill: 0x555577, fontFamily: "monospace" }),
+          style: new TextStyle({
+            fontSize: 11,
+            fill: 0x8888aa,
+            fontFamily: "monospace",
+            fontWeight: "bold",
+            letterSpacing: 1,
+          }),
         });
-        label.x = zone.x * CELL_SIZE + 4;
-        label.y = zone.y * CELL_SIZE + 2;
+        label.x = zone.x * CELL_SIZE + 8;
+        label.y = zone.y * CELL_SIZE + 6;
         world.addChild(label);
       }
 
@@ -215,19 +232,17 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
         offline: 0x6b7280,
       };
 
-      const labelStyle = new TextStyle({
-        fontSize: 9,
-        fill: 0xe2e8f0,
-        fontFamily: "monospace",
-        align: "center",
-      });
+      const STATUS_BORDER: Record<string, number> = {
+        active: 0x10b981,
+        idle: 0x334155,
+        offline: 0x1e293b,
+      };
 
-      const statusLabelStyle = new TextStyle({
-        fontSize: 7,
-        fill: 0x94a3b8,
-        fontFamily: "monospace",
-        align: "center",
-      });
+      const STATUS_LABELS: Record<string, string> = {
+        active: "WORKING",
+        idle: "IDLE",
+        offline: "OFF",
+      };
 
       interface AgentRuntime {
         sprite: InstanceType<typeof Sprite>;
@@ -324,56 +339,58 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
             agentContainer.addChild(glow);
             agentContainer.addChild(sprite);
 
-            // Name label container (emoji + name + status dot)
+            // Name label container
             const nameLabel = new Container();
+            const isActive = state.status === "active";
+            const borderColor = STATUS_BORDER[state.status] ?? 0x334155;
 
-            // Background pill
+            // Build label text: "🐙 Joma · WORKING"
+            const labelStr = `${state.avatar} ${state.agentName}`;
+            const statusStr = STATUS_LABELS[state.status] ?? "";
+
+            const nameText = new Text({
+              text: labelStr,
+              style: new TextStyle({
+                fontSize: 9,
+                fill: isActive ? 0xffffff : state.status === "offline" ? 0x6b7280 : 0xc8d0da,
+                fontFamily: "monospace",
+                fontWeight: isActive ? "bold" : "normal",
+              }),
+            });
+            nameText.anchor.set(0.5, 1);
+            nameText.y = -2;
+
+            const statusText = new Text({
+              text: statusStr,
+              style: new TextStyle({
+                fontSize: 7,
+                fill: STATUS_COLORS[state.status] ?? 0x6b7280,
+                fontFamily: "monospace",
+                fontWeight: "bold",
+              }),
+            });
+            statusText.anchor.set(0.5, 0);
+            statusText.y = 0;
+
+            // Background pill sized to content
+            const pillW = Math.max(nameText.width, statusText.width) + 16;
+            const pillH = 22;
             const labelBg = new Graphics();
-            labelBg.roundRect(-30, -8, 60, 22, 4);
-            labelBg.fill({ color: 0x0f172a, alpha: 0.85 });
-            labelBg.stroke({ width: 0.5, color: 0x334155 });
+            labelBg.roundRect(-pillW / 2, -pillH / 2 - 3, pillW, pillH, 4);
+            labelBg.fill({ color: 0x0f172a, alpha: 0.9 });
+            labelBg.stroke({ width: isActive ? 1.5 : 0.5, color: borderColor });
             nameLabel.addChild(labelBg);
 
             // Status dot
             const statusDot = new Graphics();
             statusDot.circle(0, 0, 3);
             statusDot.fill(STATUS_COLORS[state.status] ?? 0x6b7280);
-            statusDot.x = -22;
-            statusDot.y = 3;
+            statusDot.x = -pillW / 2 + 7;
+            statusDot.y = -3;
             nameLabel.addChild(statusDot);
 
-            // Emoji text
-            const emojiText = new Text({
-              text: state.avatar,
-              style: new TextStyle({ fontSize: 10 }),
-            });
-            emojiText.anchor.set(0.5, 0.5);
-            emojiText.x = -14;
-            emojiText.y = 3;
-            nameLabel.addChild(emojiText);
-
-            // Name text
-            const nameText = new Text({
-              text: state.agentName,
-              style: labelStyle,
-            });
-            nameText.anchor.set(0, 0.5);
-            nameText.x = -6;
-            nameText.y = 3;
             nameLabel.addChild(nameText);
-
-            // Adjust pill width to fit name
-            const textW = nameText.width;
-            labelBg.clear();
-            const pillW = Math.max(60, textW + 38);
-            labelBg.roundRect(-pillW / 2, -8, pillW, 22, 4);
-            labelBg.fill({ color: 0x0f172a, alpha: 0.85 });
-            labelBg.stroke({ width: 0.5, color: 0x334155 });
-            // Reposition elements centered
-            statusDot.x = -pillW / 2 + 8;
-            emojiText.x = -pillW / 2 + 18;
-            nameText.x = -pillW / 2 + 28;
-
+            nameLabel.addChild(statusText);
             agentContainer.addChild(nameLabel);
 
             sprite.x = movement.pixelX;

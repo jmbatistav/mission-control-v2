@@ -3,8 +3,8 @@
    ─────────────────────────────────────────────*/
 
 export const CELL_SIZE = 48; // pixels per grid cell (3x upscale of 16px sprites)
-export const OFFICE_COLS = 20;
-export const OFFICE_ROWS = 16;
+export const OFFICE_COLS = 22;
+export const OFFICE_ROWS = 20;
 export const WORLD_WIDTH = OFFICE_COLS * CELL_SIZE;
 export const WORLD_HEIGHT = OFFICE_ROWS * CELL_SIZE;
 
@@ -19,13 +19,13 @@ export interface Zone {
 }
 
 export const ZONES: Record<string, Zone> = {
-  manager:     { x: 1, y: 1, w: 3, h: 3, label: "Leadership" },
-  engineering: { x: 5, y: 1, w: 9, h: 3, label: "Engineering" },
-  design:      { x: 1, y: 5, w: 3, h: 3, label: "Design" },
-  product:     { x: 5, y: 5, w: 6, h: 3, label: "Product" },
-  operations:  { x: 1, y: 9, w: 6, h: 3, label: "Operations" },
-  meetingRoom: { x: 14, y: 1, w: 5, h: 4, label: "Meeting Room" },
-  breakArea:   { x: 14, y: 8, w: 5, h: 4, label: "Break Area" },
+  manager:     { x: 1, y: 1, w: 3, h: 4, label: "👑 Leadership" },
+  engineering: { x: 5, y: 1, w: 10, h: 4, label: "⚡ Engineering" },
+  design:      { x: 1, y: 6, w: 4, h: 4, label: "🎨 Design" },
+  product:     { x: 6, y: 6, w: 7, h: 4, label: "📋 Product" },
+  operations:  { x: 1, y: 11, w: 7, h: 4, label: "🛠️ Operations" },
+  meetingRoom: { x: 16, y: 1, w: 5, h: 5, label: "🏛️ Meeting Room" },
+  breakArea:   { x: 16, y: 9, w: 5, h: 5, label: "☕ Break Area" },
 };
 
 /* ─── Cubicle positions within zones ─── */
@@ -43,7 +43,7 @@ function cubiclesForZone(zone: Zone, zoneName: string, count: number): CubiclePo
   for (let i = 0; i < count; i++) {
     cubicles.push({
       gridX: zone.x + i * 3,
-      gridY: zone.y,
+      gridY: zone.y + 1, // +1 to leave room for zone label
       zone: zoneName,
     });
   }
@@ -58,6 +58,15 @@ export const CUBICLE_POSITIONS: Record<string, CubiclePos[]> = {
   operations:  cubiclesForZone(ZONES.operations, "operations", 2),
 };
 
+/** Department name for each agent function */
+export const DEPT_MAP: Record<string, string> = {
+  leadership: "leadership",
+  engineering: "engineering",
+  design: "design",
+  product: "product",
+  operations: "operations",
+};
+
 /** Get the grid cell where an agent sits (chair position inside cubicle) */
 export function getAgentSeatPosition(dept: string, indexInDept: number): { x: number; y: number } {
   const cubicles = CUBICLE_POSITIONS[dept];
@@ -69,7 +78,7 @@ export function getAgentSeatPosition(dept: string, indexInDept: number): { x: nu
 
 /* ─── Meeting room seat positions ─── */
 
-const MEETING_CENTER = { x: ZONES.meetingRoom.x + 2, y: ZONES.meetingRoom.y + 2 };
+const MEETING_CENTER = { x: ZONES.meetingRoom.x + 2, y: ZONES.meetingRoom.y + 3 };
 
 export function getMeetingSeat(seatIndex: number): { x: number; y: number } {
   // 6 seats around the meeting table
