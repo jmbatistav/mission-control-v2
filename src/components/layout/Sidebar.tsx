@@ -53,13 +53,6 @@ const navItems = [
     ),
   },
   {
-    href: "/office3d",
-    label: "3D Office",
-    icon: (
-      <span className="w-5 h-5 flex items-center justify-center text-sm">🏗️</span>
-    ),
-  },
-  {
     href: "/office2d",
     label: "8-Bit Office",
     icon: (
