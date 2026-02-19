@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useCallback } from "react";
 import * as THREE from "three";
 import AgentFigure from "./AgentFigure";
 import type { AgentAnimState } from "./AgentFigure";
@@ -24,6 +24,8 @@ interface WalkingAgentProps {
   onClick?: () => void;
   /** Called when walking agent arrives at destination */
   onArrived?: (agentId: string) => void;
+  /** Optional label for autonomous behavior */
+  autonomousLabel?: string;
 }
 
 export default function WalkingAgent({
@@ -39,6 +41,7 @@ export default function WalkingAgent({
   hideLabels,
   onClick,
   onArrived,
+  autonomousLabel,
 }: WalkingAgentProps) {
   const onArrivedCallback = useCallback(() => {
     onArrived?.(agentId);
@@ -59,13 +62,24 @@ export default function WalkingAgent({
 
   // For meeting seated states, use meeting seat position from path destination
   const isAtMeeting = animState === "in_meeting" || animState === "sitting_down";
-  const meetingPos = isAtMeeting && path && path.length > 0
-    ? path[path.length - 1]
-    : null;
+  const meetingPos =
+    isAtMeeting && path && path.length > 0 ? path[path.length - 1] : null;
+
+  // For autonomous "idle at destination" (at_break, visiting), use path end
+  const isAtAutonomousDestination =
+    !isWalking &&
+    !isAtMeeting &&
+    animState === "idle" &&
+    autonomousLabel &&
+    path &&
+    path.length > 0;
+  const autoDestPos = isAtAutonomousDestination ? path[path.length - 1] : null;
 
   const finalPos: [number, number, number] = meetingPos
     ? [meetingPos.x, meetingPos.y, meetingPos.z]
-    : pos;
+    : autoDestPos
+      ? [autoDestPos.x, autoDestPos.y, autoDestPos.z]
+      : pos;
 
   // Rotation: walking uses movement rotation, meeting uses seat rotation, otherwise 0
   const rotY = isWalking

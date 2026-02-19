@@ -104,4 +104,59 @@ export function getPath(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[]
   return points;
 }
 
-export { MEETING_ROOM_CENTER };
+/* ─────────────────────────────────────────────
+   Break Area & Visit Positions
+   ─────────────────────────────────────────────*/
+
+const BREAK_AREA_CENTER: [number, number, number] = [8, 0, 10];
+
+/**
+ * Get a position near the break area coffee table.
+ * Slight offset so agents stand at the lounge chairs, not dead-center.
+ */
+export function getBreakAreaPosition(): [number, number, number] {
+  // Stand near the lounge chairs, offset from center
+  const offsetX = (Math.random() - 0.5) * 1.2;
+  const offsetZ = 0.5 + Math.random() * 0.3;
+  return [
+    BREAK_AREA_CENTER[0] + offsetX,
+    0,
+    BREAK_AREA_CENTER[2] + offsetZ,
+  ];
+}
+
+/**
+ * Get a position in front of a target cubicle for visiting.
+ * Stands in the aisle facing the target agent's cubicle.
+ */
+export function getVisitPosition(
+  targetCubiclePos: THREE.Vector3
+): [number, number, number] {
+  // Stand 1.2 units in front (positive Z) of the cubicle
+  return [targetCubiclePos.x, 0, targetCubiclePos.z + 1.2];
+}
+
+/**
+ * Get path from a cubicle to the break area, routed through the aisle.
+ */
+export function getPathToBreakArea(
+  from: THREE.Vector3
+): THREE.Vector3[] {
+  const breakPos = getBreakAreaPosition();
+  const target = new THREE.Vector3(...breakPos);
+  return getPath(from, target);
+}
+
+/**
+ * Get path from a cubicle to another cubicle for a visit.
+ */
+export function getPathToVisit(
+  from: THREE.Vector3,
+  targetCubiclePos: THREE.Vector3
+): THREE.Vector3[] {
+  const visitPos = getVisitPosition(targetCubiclePos);
+  const target = new THREE.Vector3(...visitPos);
+  return getPath(from, target);
+}
+
+export { MEETING_ROOM_CENTER, BREAK_AREA_CENTER };

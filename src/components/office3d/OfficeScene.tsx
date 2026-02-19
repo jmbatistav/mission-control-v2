@@ -11,6 +11,7 @@ import DepartmentZone from "./DepartmentZone";
 import CameraController, { CameraControllerHandle } from "./CameraController";
 import WalkingAgent from "./WalkingAgent";
 import { useAgentStates, type AgentPhysicalState } from "./AgentStateManager";
+import { AutonomousIndicators } from "./AutonomousBehavior";
 
 interface Agent {
   _id: string;
@@ -44,11 +45,14 @@ const colorMap: Record<string, string> = {
 };
 
 // Layout positions for departments (top-down)
-const departmentLayout: Record<string, { position: [number, number, number]; emoji: string; label: string }> = {
+const departmentLayout: Record<
+  string,
+  { position: [number, number, number]; emoji: string; label: string }
+> = {
   engineering: { position: [-1, 0, 0], emoji: "⚡", label: "Engineering Bay" },
-  design:      { position: [-1, 0, 5], emoji: "🎨", label: "Design Studio" },
-  product:     { position: [2, 0, 5], emoji: "📋", label: "Product Lab" },
-  operations:  { position: [-1, 0, 10], emoji: "🛠️", label: "Ops Center" },
+  design: { position: [-1, 0, 5], emoji: "🎨", label: "Design Studio" },
+  product: { position: [2, 0, 5], emoji: "📋", label: "Product Lab" },
+  operations: { position: [-1, 0, 10], emoji: "🛠️", label: "Ops Center" },
 };
 
 interface OfficeSceneProps {
@@ -58,7 +62,12 @@ interface OfficeSceneProps {
   selectedId?: string | null;
 }
 
-export default function OfficeScene({ agents, activeMeetings = [], onAgentClick, selectedId }: OfficeSceneProps) {
+export default function OfficeScene({
+  agents,
+  activeMeetings = [],
+  onAgentClick,
+  selectedId,
+}: OfficeSceneProps) {
   const cameraRef = useRef<CameraControllerHandle>(null);
 
   // Group agents by function
@@ -94,7 +103,7 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
     return map;
   }, [agentStates]);
 
-  // Set of agent IDs currently walking or in meeting (render separately, not in cubicle)
+  // Set of agent IDs currently walking, in meeting, or doing autonomous actions (render separately)
   const mobilAgentIds = useMemo(() => {
     const set = new Set<string>();
     for (const s of agentStates) {
@@ -102,7 +111,9 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
         s.animState === "walking" ||
         s.animState === "in_meeting" ||
         s.animState === "sitting_down" ||
-        s.animState === "standing_up"
+        s.animState === "standing_up" ||
+        // Autonomous: agents at break or visiting (idle but away from cubicle)
+        s.autonomousLabel
       ) {
         set.add(s.agentId);
       }
@@ -110,11 +121,15 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
     return set;
   }, [agentStates]);
 
+  // Check if any agent is at the break area
+  const hasBreakVisitor = useMemo(() => {
+    return agentStates.some((s) => s.autonomousLabel?.startsWith("☕"));
+  }, [agentStates]);
+
   const handleAgentClick = useCallback(
     (id: string) => {
       const agent = agents.find((a) => a._id === id);
       if (agent) {
-        // Find agent's position based on department layout
         const fn = agent.function;
         if (fn === "leadership") {
           cameraRef.current?.focusOnAgent([-6, 0, -4]);
@@ -180,7 +195,9 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
       <ManagerArea
         position={[-6, 0, -4]}
         agent={leader}
-        resolvedColor={leader ? (colorMap[leader.color] || "#6b7280") : "#6b7280"}
+        resolvedColor={
+          leader ? colorMap[leader.color] || "#6b7280" : "#6b7280"
+        }
         onAgentClick={handleAgentClick}
         hideLabels={!!selectedId}
         hideFigure={leader ? mobilAgentIds.has(leader._id) : false}
@@ -212,7 +229,7 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
         );
       })}
 
-      {/* Walking / in-meeting agents rendered independently */}
+      {/* Walking / in-meeting / autonomous agents rendered independently */}
       {agentStates
         .filter((s) => mobilAgentIds.has(s.agentId))
         .map((s) => {
@@ -233,12 +250,23 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
               meetingSeatRotation={s.meetingSeatRotation}
               hideLabels={!!selectedId}
               onClick={() => handleAgentClick(agent._id)}
+              autonomousLabel={s.autonomousLabel}
             />
           );
         })}
 
+      {/* Autonomous behavior indicators (chat bubbles, break labels) */}
+      <AutonomousIndicators
+        agentStates={agentStates}
+        hideLabels={!!selectedId}
+      />
+
       {/* Break area - bottom right */}
-      <BreakArea position={[8, 0, 10]} hideLabels={!!selectedId} />
+      <BreakArea
+        position={[8, 0, 10]}
+        hideLabels={!!selectedId}
+        hasVisitor={hasBreakVisitor}
+      />
 
       {/* Fog for depth */}
       <fog attach="fog" args={["#030712", 20, 45]} />
