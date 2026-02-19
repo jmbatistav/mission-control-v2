@@ -324,9 +324,9 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
             const colorHex = getColorHex(state.color);
             const tex = getAgentTexture(colorHex, state.animState, 0);
             const sprite = new Sprite(tex);
-            sprite.width = CELL_SIZE * 0.75;
-            sprite.height = CELL_SIZE * 1.15;
-            sprite.anchor.set(0.5, 0.6); // anchor at body center so agent sits at grid pos
+            sprite.width = CELL_SIZE * 0.7;
+            sprite.height = CELL_SIZE * 1.1;
+            sprite.anchor.set(0.5, 0.35); // anchor above center so bottom of sprite aligns with chair
 
             const movement = new AgentMovement(state.homeX, state.homeY);
             const anim = new AgentAnimController();
@@ -448,7 +448,7 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
 
           // Position name label above sprite head
           rt.nameLabel.x = rt.movement.pixelX;
-          rt.nameLabel.y = rt.movement.pixelY - CELL_SIZE * 1.2;
+          rt.nameLabel.y = rt.movement.pixelY - CELL_SIZE * 0.5;
 
           if (!stillMoving && rt.anim.state === "walking") {
             rt.anim.setState(rt.state.animState !== "walking" ? rt.state.animState : "idle");
