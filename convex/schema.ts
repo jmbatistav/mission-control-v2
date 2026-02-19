@@ -99,6 +99,28 @@ export default defineSchema({
   })
     .index("by_entity", ["entityType", "entityId"])
     .index("by_time", ["createdAt"]),
+  teamMembers: defineTable({
+    name: v.string(),
+    role: v.string(),
+    function: v.union(
+      v.literal("engineering"),
+      v.literal("design"),
+      v.literal("product"),
+      v.literal("operations"),
+      v.literal("leadership")
+    ),
+    specialty: v.string(),
+    status: v.union(v.literal("active"), v.literal("idle"), v.literal("offline")),
+    owner: v.union(v.literal("Kar"), v.literal("Joma")),
+    avatar: v.string(), // emoji
+    color: v.string(), // tailwind color
+    responsibilities: v.array(v.string()),
+    currentTask: v.optional(v.string()),
+    model: v.optional(v.string()), // AI model powering this agent
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_function", ["function"]).index("by_owner", ["owner"]).index("by_status", ["status"]),
+
   calendarEvents: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
