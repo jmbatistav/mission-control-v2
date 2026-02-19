@@ -72,9 +72,8 @@ export function getAgentSeatPosition(dept: string, indexInDept: number): { x: nu
   const cubicles = CUBICLE_POSITIONS[dept];
   if (!cubicles || cubicles.length === 0) return { x: 2, y: 4 };
   const cubicle = cubicles[indexInDept % cubicles.length];
-  // Agent sits at row 2 of cubicle (behind desk row 0, chair at row 1)
-  // Using row 2 (front of cubicle) so they visually sit IN FRONT of the desk
-  return { x: cubicle.gridX + 1, y: cubicle.gridY + 2 };
+  // Agent sits at row 1 of cubicle (the chair row, right behind the desk)
+  return { x: cubicle.gridX + 1, y: cubicle.gridY + 1 };
 }
 
 /* ─── Meeting room seat positions ─── */
@@ -131,8 +130,9 @@ export function buildBlockedGrid(): boolean[][] {
         if (bx < OFFICE_COLS && cub.gridY < OFFICE_ROWS) {
           grid[cub.gridY][bx] = true;
         }
-        // Row 1: chair area — blocked for pathfinding (only the agent can be there)
-        if (bx < OFFICE_COLS && cub.gridY + 1 < OFFICE_ROWS) {
+        // Row 1: chair area — walkable (agents sit here and need to walk through to reach seat)
+        // Only the side walls (dx=0 and dx=2) are blocked
+        if ((dx === 0 || dx === 2) && bx < OFFICE_COLS && cub.gridY + 1 < OFFICE_ROWS) {
           grid[cub.gridY + 1][bx] = true;
         }
       }

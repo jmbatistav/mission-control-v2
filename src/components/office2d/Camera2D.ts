@@ -55,6 +55,12 @@ export class Camera2D {
     this.followTargetY = null;
   }
 
+  /** Reset camera to center of office */
+  resetToCenter(worldWidth: number, worldHeight: number) {
+    this.followTargetX = worldWidth / 2;
+    this.followTargetY = worldHeight / 2;
+  }
+
   /** Handle mouse/touch drag start */
   onDragStart(screenX: number, screenY: number) {
     this.dragging = true;

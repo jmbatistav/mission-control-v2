@@ -443,8 +443,9 @@ export class OfficeStateManager {
           autonomousCount++;
         } else {
           // Visit another agent
+          // Only visit idle agents — never bother someone who's working
           const others = this.agents.filter(
-            (a) => a._id !== agent._id && a.status !== "offline"
+            (a) => a._id !== agent._id && a.status === "idle"
           );
           if (others.length > 0) {
             const target = others[Math.floor(Math.random() * others.length)];

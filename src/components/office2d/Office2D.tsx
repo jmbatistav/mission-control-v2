@@ -324,9 +324,9 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
             const colorHex = getColorHex(state.color);
             const tex = getAgentTexture(colorHex, state.animState, 0);
             const sprite = new Sprite(tex);
-            sprite.width = CELL_SIZE * 0.85;
-            sprite.height = CELL_SIZE * 1.25;
-            sprite.anchor.set(0.5, 0.8); // anchor near bottom so feet touch ground
+            sprite.width = CELL_SIZE * 0.75;
+            sprite.height = CELL_SIZE * 1.15;
+            sprite.anchor.set(0.5, 0.6); // anchor at body center so agent sits at grid pos
 
             const movement = new AgentMovement(state.homeX, state.homeY);
             const anim = new AgentAnimController();
@@ -421,7 +421,10 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
           }
         }
 
-        if (!selId) camera.stopFollow();
+        if (!selId) {
+          camera.stopFollow();
+          camera.resetToCenter(OFFICE_COLS * CELL_SIZE, OFFICE_ROWS * CELL_SIZE);
+        }
       };
 
       // ─── Game loop ───
