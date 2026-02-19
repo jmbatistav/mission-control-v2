@@ -6,27 +6,6 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
-import { Application, Container, Sprite, Graphics, Text, TextStyle } from "pixi.js";
-import {
-  CELL_SIZE,
-  OFFICE_COLS,
-  OFFICE_ROWS,
-  ZONES,
-  CUBICLE_POSITIONS,
-  getColorHex,
-} from "./GridSystem";
-import {
-  getAgentTexture,
-  getDeskTexture,
-  getChairTexture,
-  getMeetingTableTexture,
-  getCoffeeMachineTexture,
-  getSofaTexture,
-  getFloorTileTexture,
-} from "./SpriteGenerator";
-import { Camera2D } from "./Camera2D";
-import { AgentAnimController, type AnimState } from "./AgentAnimationController";
-import { AgentMovement } from "./AgentMovement2D";
 import type { AgentPhysicalState2D } from "./OfficeStateManager";
 
 /* ─── Types ─── */
@@ -37,63 +16,78 @@ interface Office2DProps {
   selectedId: string | null;
 }
 
-interface AgentRuntime {
-  sprite: Sprite;
-  movement: AgentMovement;
-  anim: AgentAnimController;
-  state: AgentPhysicalState2D;
-  lastPath: string; // serialized path for change detection
-  selectionGlow: Graphics;
-}
-
 /* ─── Component ─── */
 
 export default function Office2D({ agentStates, onAgentClick, selectedId }: Office2DProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const appRef = useRef<Application | null>(null);
-  const cameraRef = useRef<Camera2D | null>(null);
-  const worldRef = useRef<Container | null>(null);
-  const agentRuntimesRef = useRef<Map<string, AgentRuntime>>(new Map());
-  const agentContainerRef = useRef<Container | null>(null);
-  const badgeCallbackRef = useRef<((badges: { id: string; x: number; y: number; name: string; avatar: string; status: string; label?: string }[]) => void) | null>(null);
-
-  // Store latest agent states for tick access
+  const engineRef = useRef<OfficeEngine | null>(null);
   const statesRef = useRef<AgentPhysicalState2D[]>([]);
-  statesRef.current = agentStates;
-
   const selectedIdRef = useRef<string | null>(null);
-  selectedIdRef.current = selectedId;
+  const onAgentClickRef = useRef(onAgentClick);
 
-  /* ─── Initialize PixiJS ─── */
+  statesRef.current = agentStates;
+  selectedIdRef.current = selectedId;
+  onAgentClickRef.current = onAgentClick;
+
+  /* ─── Initialize PixiJS (async, SSR-safe) ─── */
   useEffect(() => {
     const container = canvasRef.current;
     if (!container) return;
 
-    const app = new Application();
     let destroyed = false;
+    let engine: OfficeEngine | null = null;
 
     const init = async () => {
+      // Dynamic import to avoid SSR issues
+      const pixi = await import("pixi.js");
+      const gridMod = await import("./GridSystem");
+      const spriteMod = await import("./SpriteGenerator");
+      const cameraMod = await import("./Camera2D");
+      const animMod = await import("./AgentAnimationController");
+      const moveMod = await import("./AgentMovement2D");
+
+      if (destroyed) return;
+
+      const {
+        Application, Container, Sprite, Graphics, Text, TextStyle,
+      } = pixi;
+
+      const {
+        CELL_SIZE, OFFICE_COLS, OFFICE_ROWS, ZONES, CUBICLE_POSITIONS, getColorHex,
+      } = gridMod;
+
+      const {
+        getAgentTexture, getDeskTexture, getChairTexture,
+        getMeetingTableTexture, getCoffeeMachineTexture,
+        getSofaTexture, getFloorTileTexture,
+      } = spriteMod;
+
+      const { Camera2D } = cameraMod;
+      const { AgentAnimController } = animMod;
+      const { AgentMovement } = moveMod;
+
+      const app = new Application();
       await app.init({
-        width: container.clientWidth,
-        height: container.clientHeight,
+        width: container.clientWidth || 800,
+        height: container.clientHeight || 600,
         backgroundColor: 0x1a1a2e,
         resolution: 1,
         antialias: false,
       });
 
-      if (destroyed) return;
+      if (destroyed) {
+        app.destroy(true);
+        return;
+      }
 
       container.appendChild(app.canvas);
-      appRef.current = app;
 
-      // World container (camera applies transforms to this)
+      // World container
       const world = new Container();
       app.stage.addChild(world);
-      worldRef.current = world;
 
       // Camera
       const camera = new Camera2D(world, app.canvas.width, app.canvas.height);
-      cameraRef.current = camera;
 
       // ─── Draw floor ───
       const floorContainer = new Container();
@@ -111,39 +105,33 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
         }
       }
 
-      // ─── Draw zone outlines and labels ───
+      // ─── Zone outlines + labels ───
       const zoneGfx = new Graphics();
       world.addChild(zoneGfx);
 
       for (const [, zone] of Object.entries(ZONES)) {
         zoneGfx.rect(
-          zone.x * CELL_SIZE,
-          zone.y * CELL_SIZE,
-          zone.w * CELL_SIZE,
-          zone.h * CELL_SIZE
+          zone.x * CELL_SIZE, zone.y * CELL_SIZE,
+          zone.w * CELL_SIZE, zone.h * CELL_SIZE
         );
         zoneGfx.stroke({ width: 1, color: 0x333355 });
 
         const label = new Text({
           text: zone.label,
-          style: new TextStyle({
-            fontSize: 10,
-            fill: 0x555577,
-            fontFamily: "monospace",
-          }),
+          style: new TextStyle({ fontSize: 10, fill: 0x555577, fontFamily: "monospace" }),
         });
         label.x = zone.x * CELL_SIZE + 4;
         label.y = zone.y * CELL_SIZE + 2;
         world.addChild(label);
       }
 
-      // ─── Draw walls (office border) ───
+      // ─── Office border ───
       const wallGfx = new Graphics();
       wallGfx.rect(0, 0, OFFICE_COLS * CELL_SIZE, OFFICE_ROWS * CELL_SIZE);
       wallGfx.stroke({ width: 2, color: 0x444466 });
       world.addChild(wallGfx);
 
-      // ─── Draw cubicles (desks + chairs) ───
+      // ─── Furniture ───
       const furnitureContainer = new Container();
       world.addChild(furnitureContainer);
 
@@ -152,7 +140,6 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
 
       for (const dept of Object.values(CUBICLE_POSITIONS)) {
         for (const cub of dept) {
-          // Desk at top row of cubicle
           const desk = new Sprite(deskTex);
           desk.x = cub.gridX * CELL_SIZE + CELL_SIZE * 0.5;
           desk.y = cub.gridY * CELL_SIZE;
@@ -160,7 +147,6 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
           desk.height = CELL_SIZE;
           furnitureContainer.addChild(desk);
 
-          // Chair at middle of cubicle
           const chair = new Sprite(chairTex);
           chair.x = (cub.gridX + 1) * CELL_SIZE + 6;
           chair.y = (cub.gridY + 1) * CELL_SIZE;
@@ -168,7 +154,6 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
           chair.height = CELL_SIZE;
           furnitureContainer.addChild(chair);
 
-          // Cubicle walls (sides)
           const wallLeft = new Graphics();
           wallLeft.rect(cub.gridX * CELL_SIZE, cub.gridY * CELL_SIZE, 2, CELL_SIZE * 3);
           wallLeft.fill(0x444455);
@@ -181,7 +166,7 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
         }
       }
 
-      // ─── Meeting room furniture ───
+      // Meeting room
       const meetingZone = ZONES.meetingRoom;
       const tableTex = getMeetingTableTexture();
       const table = new Sprite(tableTex);
@@ -191,21 +176,13 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
       table.height = CELL_SIZE * 1.5;
       furnitureContainer.addChild(table);
 
-      // Meeting room walls
       const mrWall = new Graphics();
-      mrWall.rect(
-        meetingZone.x * CELL_SIZE,
-        meetingZone.y * CELL_SIZE,
-        meetingZone.w * CELL_SIZE,
-        meetingZone.h * CELL_SIZE
-      );
+      mrWall.rect(meetingZone.x * CELL_SIZE, meetingZone.y * CELL_SIZE, meetingZone.w * CELL_SIZE, meetingZone.h * CELL_SIZE);
       mrWall.stroke({ width: 2, color: 0x3355aa });
       world.addChild(mrWall);
 
-      // ─── Break area furniture ───
+      // Break area
       const breakZone = ZONES.breakArea;
-
-      // Sofa
       const sofaTex = getSofaTexture();
       const sofa = new Sprite(sofaTex);
       sofa.x = (breakZone.x + 1) * CELL_SIZE;
@@ -214,7 +191,6 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
       sofa.height = CELL_SIZE;
       furnitureContainer.addChild(sofa);
 
-      // Coffee machine
       const coffeeTex = getCoffeeMachineTexture(0);
       const coffee = new Sprite(coffeeTex);
       coffee.x = (breakZone.x + 4) * CELL_SIZE;
@@ -223,34 +199,33 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
       coffee.height = CELL_SIZE;
       furnitureContainer.addChild(coffee);
 
-      // Break area border
       const baWall = new Graphics();
-      baWall.rect(
-        breakZone.x * CELL_SIZE,
-        breakZone.y * CELL_SIZE,
-        breakZone.w * CELL_SIZE,
-        breakZone.h * CELL_SIZE
-      );
+      baWall.rect(breakZone.x * CELL_SIZE, breakZone.y * CELL_SIZE, breakZone.w * CELL_SIZE, breakZone.h * CELL_SIZE);
       baWall.stroke({ width: 2, color: 0xaa5533 });
       world.addChild(baWall);
 
       // ─── Agent container ───
       const agentContainer = new Container();
       world.addChild(agentContainer);
-      agentContainerRef.current = agentContainer;
+
+      // ─── Agent runtime map ───
+      interface AgentRuntime {
+        sprite: InstanceType<typeof Sprite>;
+        movement: InstanceType<typeof AgentMovement>;
+        anim: InstanceType<typeof AgentAnimController>;
+        state: AgentPhysicalState2D;
+        lastPath: string;
+        selectionGlow: InstanceType<typeof Graphics>;
+      }
+
+      const runtimes = new Map<string, AgentRuntime>();
 
       // ─── Event listeners ───
       const canvas = app.canvas;
 
-      const onPointerDown = (e: PointerEvent) => {
-        camera.onDragStart(e.clientX, e.clientY);
-      };
-      const onPointerMove = (e: PointerEvent) => {
-        camera.onDragMove(e.clientX, e.clientY);
-      };
-      const onPointerUp = () => {
-        camera.onDragEnd();
-      };
+      const onPointerDown = (e: PointerEvent) => camera.onDragStart(e.clientX, e.clientY);
+      const onPointerMove = (e: PointerEvent) => camera.onDragMove(e.clientX, e.clientY);
+      const onPointerUp = () => camera.onDragEnd();
       const onWheel = (e: WheelEvent) => {
         e.preventDefault();
         camera.onZoom(e.deltaY, e.clientX, e.clientY);
@@ -263,206 +238,169 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
           case "ArrowDown": camera.onKeyPan(0, -1); break;
         }
       };
+      const onClick = (e: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        const worldPos = camera.screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+        let clickedId: string | null = null;
+        let minDist = CELL_SIZE * 1.5;
+        for (const [id, rt] of runtimes) {
+          const dx = worldPos.x - rt.movement.pixelX;
+          const dy = worldPos.y - rt.movement.pixelY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < minDist) { minDist = dist; clickedId = id; }
+        }
+        if (clickedId) onAgentClickRef.current(clickedId);
+      };
 
       canvas.addEventListener("pointerdown", onPointerDown);
       canvas.addEventListener("pointermove", onPointerMove);
       canvas.addEventListener("pointerup", onPointerUp);
       canvas.addEventListener("pointerleave", onPointerUp);
       canvas.addEventListener("wheel", onWheel, { passive: false });
+      canvas.addEventListener("click", onClick);
       window.addEventListener("keydown", onKeyDown);
 
-      // ─── Click detection for agents ───
-      canvas.addEventListener("click", (e: MouseEvent) => {
-        const rect = canvas.getBoundingClientRect();
-        const sx = e.clientX - rect.left;
-        const sy = e.clientY - rect.top;
-        const worldPos = camera.screenToWorld(sx, sy);
-
-        // Check if click is on any agent
-        let clickedId: string | null = null;
-        let minDist = CELL_SIZE * 1.5;
-
-        for (const [id, runtime] of agentRuntimesRef.current) {
-          const dx = worldPos.x - runtime.movement.pixelX;
-          const dy = worldPos.y - runtime.movement.pixelY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < minDist) {
-            minDist = dist;
-            clickedId = id;
-          }
-        }
-
-        if (clickedId) {
-          onAgentClick(clickedId);
-        }
-      });
-
-      // ─── Resize handler ───
       const onResize = () => {
-        if (!container || destroyed) return;
-        app.renderer.resize(container.clientWidth, container.clientHeight);
-        camera.resize(container.clientWidth, container.clientHeight);
+        if (destroyed || !container) return;
+        app.renderer.resize(container.clientWidth || 800, container.clientHeight || 600);
+        camera.resize(container.clientWidth || 800, container.clientHeight || 600);
       };
       window.addEventListener("resize", onResize);
 
-      // ─── Game loop (ticker) ───
-      app.ticker.add((ticker) => {
-        const dt = ticker.deltaMS;
+      // ─── Sync function (called from external useEffect) ───
+      const syncAgents = (states: AgentPhysicalState2D[], selId: string | null) => {
+        const currentIds = new Set(states.map((s) => s.agentId));
 
-        // Update camera
-        camera.update(dt);
-
-        // Update agents
-        for (const [, runtime] of agentRuntimesRef.current) {
-          // Update animation
-          runtime.anim.update(dt);
-
-          // Update movement
-          const stillMoving = runtime.movement.update(dt);
-
-          // Update sprite position
-          runtime.sprite.x = runtime.movement.pixelX;
-          runtime.sprite.y = runtime.movement.pixelY;
-
-          // Update sprite texture
-          const colorHex = getColorHex(runtime.state.color);
-          const animState = runtime.anim.state;
-          const frame = runtime.anim.frameIndex;
-          runtime.sprite.texture = getAgentTexture(colorHex, animState, frame);
-
-          // Update selection glow
-          const isSelected = runtime.state.agentId === selectedIdRef.current;
-          runtime.selectionGlow.visible = isSelected;
-          if (isSelected) {
-            runtime.selectionGlow.x = runtime.movement.pixelX - 4;
-            runtime.selectionGlow.y = runtime.movement.pixelY - 4;
-          }
-
-          // If walking is done and anim is still walking, transition
-          if (!stillMoving && runtime.anim.state === "walking") {
-            // Revert to appropriate idle state
-            const s = runtime.state;
-            if (s.animState !== "walking") {
-              runtime.anim.setState(s.animState);
-            } else {
-              runtime.anim.setState("idle");
-            }
+        // Remove old
+        for (const [id, rt] of runtimes) {
+          if (!currentIds.has(id)) {
+            agentContainer.removeChild(rt.sprite);
+            agentContainer.removeChild(rt.selectionGlow);
+            runtimes.delete(id);
           }
         }
-      });
 
-      // Cleanup
-      return () => {
+        // Add or update
+        for (const state of states) {
+          let rt = runtimes.get(state.agentId);
+          if (!rt) {
+            const colorHex = getColorHex(state.color);
+            const tex = getAgentTexture(colorHex, state.animState, 0);
+            const sprite = new Sprite(tex);
+            sprite.width = CELL_SIZE;
+            sprite.height = CELL_SIZE * 1.5;
+            sprite.anchor.set(0.5, 0.5);
+
+            const movement = new AgentMovement(state.homeX, state.homeY);
+            const anim = new AgentAnimController();
+            anim.setState(state.animState);
+
+            const glow = new Graphics();
+            glow.roundRect(0, 0, CELL_SIZE + 8, CELL_SIZE * 1.5 + 8, 4);
+            glow.fill({ color: 0x06b6d4, alpha: 0.3 });
+            glow.visible = false;
+            agentContainer.addChild(glow);
+            agentContainer.addChild(sprite);
+
+            sprite.x = movement.pixelX;
+            sprite.y = movement.pixelY;
+
+            rt = { sprite, movement, anim, state, lastPath: "", selectionGlow: glow };
+            runtimes.set(state.agentId, rt);
+          }
+
+          rt.state = state;
+          rt.anim.setState(state.animState);
+
+          if (state.path) {
+            const pathStr = JSON.stringify(state.path);
+            if (pathStr !== rt.lastPath) {
+              rt.lastPath = pathStr;
+              rt.movement.setPath(state.path);
+            }
+          } else if (state.animState !== "walking" && !rt.movement.isMoving) {
+            if (rt.movement.gridX !== state.targetX || rt.movement.gridY !== state.targetY) {
+              rt.movement.teleport(state.targetX, state.targetY);
+            }
+          }
+
+          // Follow selected
+          if (state.agentId === selId) {
+            camera.followPosition(rt.movement.pixelX, rt.movement.pixelY);
+          }
+        }
+
+        if (!selId) camera.stopFollow();
+      };
+
+      // ─── Game loop ───
+      const tickerFn = (ticker: { deltaMS: number }) => {
+        camera.update(ticker.deltaMS);
+        for (const [, rt] of runtimes) {
+          rt.anim.update(ticker.deltaMS);
+          const stillMoving = rt.movement.update(ticker.deltaMS);
+          rt.sprite.x = rt.movement.pixelX;
+          rt.sprite.y = rt.movement.pixelY;
+
+          const colorHex = getColorHex(rt.state.color);
+          rt.sprite.texture = getAgentTexture(colorHex, rt.anim.state, rt.anim.frameIndex);
+
+          const isSelected = rt.state.agentId === selectedIdRef.current;
+          rt.selectionGlow.visible = isSelected;
+          if (isSelected) {
+            rt.selectionGlow.x = rt.movement.pixelX - 4;
+            rt.selectionGlow.y = rt.movement.pixelY - 4;
+          }
+
+          if (!stillMoving && rt.anim.state === "walking") {
+            rt.anim.setState(rt.state.animState !== "walking" ? rt.state.animState : "idle");
+          }
+        }
+      };
+      app.ticker.add(tickerFn);
+
+      // Store engine ref
+      engine = { syncAgents, app };
+      engineRef.current = engine;
+
+      // Do initial sync
+      syncAgents(statesRef.current, selectedIdRef.current);
+
+      // Cleanup reference
+      (engine as any)._cleanup = () => {
         canvas.removeEventListener("pointerdown", onPointerDown);
         canvas.removeEventListener("pointermove", onPointerMove);
         canvas.removeEventListener("pointerup", onPointerUp);
         canvas.removeEventListener("pointerleave", onPointerUp);
         canvas.removeEventListener("wheel", onWheel);
+        canvas.removeEventListener("click", onClick);
         window.removeEventListener("keydown", onKeyDown);
         window.removeEventListener("resize", onResize);
+        app.ticker.remove(tickerFn);
       };
     };
 
-    init();
+    init().catch(console.error);
 
     return () => {
       destroyed = true;
-      app.destroy(true, { children: true });
-      appRef.current = null;
+      if (engine) {
+        (engine as any)._cleanup?.();
+        engine.app.destroy(true, { children: true });
+      }
+      engineRef.current = null;
+      // Remove any canvas left behind
+      if (container) {
+        while (container.firstChild) {
+          container.removeChild(container.firstChild);
+        }
+      }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ─── Sync agent states to sprites ─── */
+  /* ─── Sync agent states when they change ─── */
   useEffect(() => {
-    const agentContainer = agentContainerRef.current;
-    if (!agentContainer) return;
-
-    const runtimes = agentRuntimesRef.current;
-    const currentIds = new Set(agentStates.map((s) => s.agentId));
-
-    // Remove agents that no longer exist
-    for (const [id, runtime] of runtimes) {
-      if (!currentIds.has(id)) {
-        agentContainer.removeChild(runtime.sprite);
-        agentContainer.removeChild(runtime.selectionGlow);
-        runtimes.delete(id);
-      }
-    }
-
-    // Add or update agents
-    for (const state of agentStates) {
-      let runtime = runtimes.get(state.agentId);
-
-      if (!runtime) {
-        // Create new agent sprite
-        const colorHex = getColorHex(state.color);
-        const tex = getAgentTexture(colorHex, state.animState, 0);
-        const sprite = new Sprite(tex);
-        sprite.width = CELL_SIZE;
-        sprite.height = CELL_SIZE * 1.5; // 16x24 aspect ratio
-        sprite.anchor.set(0.5, 0.5);
-        sprite.cursor = "pointer";
-
-        const movement = new AgentMovement(state.homeX, state.homeY);
-        const anim = new AgentAnimController();
-        anim.setState(state.animState);
-
-        // Selection glow
-        const glow = new Graphics();
-        glow.roundRect(0, 0, CELL_SIZE + 8, CELL_SIZE * 1.5 + 8, 4);
-        glow.fill({ color: 0x06b6d4, alpha: 0.3 });
-        glow.visible = false;
-        agentContainer.addChild(glow);
-
-        sprite.x = movement.pixelX;
-        sprite.y = movement.pixelY;
-        agentContainer.addChild(sprite);
-
-        runtime = {
-          sprite,
-          movement,
-          anim,
-          state,
-          lastPath: "",
-          selectionGlow: glow,
-        };
-        runtimes.set(state.agentId, runtime);
-      }
-
-      // Update state
-      runtime.state = state;
-
-      // Update animation state
-      runtime.anim.setState(state.animState);
-
-      // Update path if changed
-      if (state.path) {
-        const pathStr = JSON.stringify(state.path);
-        if (pathStr !== runtime.lastPath) {
-          runtime.lastPath = pathStr;
-          runtime.movement.setPath(state.path);
-        }
-      } else if (state.animState !== "walking") {
-        // If not walking, ensure position is correct
-        if (!runtime.movement.isMoving) {
-          const targetX = state.targetX;
-          const targetY = state.targetY;
-          if (runtime.movement.gridX !== targetX || runtime.movement.gridY !== targetY) {
-            runtime.movement.teleport(targetX, targetY);
-          }
-        }
-      }
-
-      // Follow selected agent
-      if (state.agentId === selectedId && cameraRef.current) {
-        cameraRef.current.followPosition(runtime.movement.pixelX, runtime.movement.pixelY);
-      }
-    }
-
-    // Stop follow if no selection
-    if (!selectedId && cameraRef.current) {
-      cameraRef.current.stopFollow();
-    }
+    engineRef.current?.syncAgents(agentStates, selectedId);
   }, [agentStates, selectedId]);
 
   return (
@@ -471,9 +409,15 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
       style={{
         width: "100%",
         height: "100%",
-        imageRendering: "pixelated" as const,
+        imageRendering: "pixelated",
         overflow: "hidden",
       }}
     />
   );
+}
+
+/* ─── Engine interface ─── */
+interface OfficeEngine {
+  syncAgents: (states: AgentPhysicalState2D[], selectedId: string | null) => void;
+  app: any;
 }

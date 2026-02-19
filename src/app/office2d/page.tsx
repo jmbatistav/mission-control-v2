@@ -39,15 +39,7 @@ export default function Office2DPage() {
   const stateManagerRef = useRef<OfficeStateManager | null>(null);
   const [agentStates, setAgentStates] = useState<AgentPhysicalState2D[]>([]);
 
-  // Initialize state manager
-  useEffect(() => {
-    const mgr = new OfficeStateManager();
-    stateManagerRef.current = mgr;
-    mgr.start();
-    return () => mgr.stop();
-  }, []);
-
-  // Map Convex data to 2D types
+  // Map Convex data to 2D types (stable references)
   const agents2D: Agent2D[] = useMemo(
     () =>
       members.map((m) => ({
@@ -75,23 +67,34 @@ export default function Office2DPage() {
     [activeMeetings]
   );
 
-  // Sync Convex data into state manager & compute states
+  // Initialize state manager + sync data + compute loop
   useEffect(() => {
-    const mgr = stateManagerRef.current;
-    if (!mgr) return;
-
+    const mgr = new OfficeStateManager();
+    stateManagerRef.current = mgr;
+    mgr.start();
     mgr.updateData(agents2D, meetings2D);
+
+    // Initial compute
+    setAgentStates(mgr.computeStates());
 
     // Compute states periodically
     const interval = setInterval(() => {
       const states = mgr.computeStates();
       setAgentStates(states);
-    }, 100); // 10 FPS state updates
+    }, 100);
 
-    // Initial compute
-    setAgentStates(mgr.computeStates());
+    return () => {
+      clearInterval(interval);
+      mgr.stop();
+      stateManagerRef.current = null;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return () => clearInterval(interval);
+  // Sync Convex data changes into state manager
+  useEffect(() => {
+    const mgr = stateManagerRef.current;
+    if (!mgr) return;
+    mgr.updateData(agents2D, meetings2D);
   }, [agents2D, meetings2D]);
 
   /* ─── Empty state ─── */
