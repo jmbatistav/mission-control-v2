@@ -60,6 +60,13 @@ const navItems = [
     ),
   },
   {
+    href: "/office2d",
+    label: "8-Bit Office",
+    icon: (
+      <span className="w-5 h-5 flex items-center justify-center text-sm">👾</span>
+    ),
+  },
+  {
     href: "/team",
     label: "Team",
     icon: (
