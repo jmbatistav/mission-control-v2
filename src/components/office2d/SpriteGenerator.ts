@@ -57,6 +57,13 @@ export function generateAgentCanvas(colorHex: number, animation: AnimType, frame
     return canvas;
   }
 
+  // Typing/working = back view (facing computer, away from viewer)
+  if (animation === "typing") {
+    drawBackViewAgent(ctx, bodyColor, bodyDark, bodyLight, frame);
+    return canvas;
+  }
+
+  // Front-facing for all other animations
   // Head (centered, 6x6 at position 5,1)
   rect(ctx, 5, 1, 6, 6, SKIN);
   // Eyes
@@ -80,17 +87,12 @@ export function generateAgentCanvas(colorHex: number, animation: AnimType, frame
       drawIdleLegs(ctx, frame);
       drawIdleArms(ctx, bodyColor, bodyDark, frame);
       if (frame === 1) {
-        // Subtle "breathing" — body shifts 1px
         rect(ctx, 4, 8, 8, 7, bodyColor);
       }
       break;
     case "walking":
       drawWalkingLegs(ctx, frame);
       drawWalkingArms(ctx, bodyColor, bodyDark, frame);
-      break;
-    case "typing":
-      drawSittingLegs(ctx);
-      drawTypingArms(ctx, bodyColor, bodyDark, frame);
       break;
     case "sitting":
       drawSittingLegs(ctx);
@@ -113,6 +115,59 @@ export function generateAgentCanvas(colorHex: number, animation: AnimType, frame
   }
 
   return canvas;
+}
+
+/** Back-view agent: sitting at desk, facing away from viewer (toward computer) */
+function drawBackViewAgent(
+  ctx: CanvasRenderingContext2D,
+  bodyColor: string, bodyDark: string, bodyLight: string,
+  frame: number
+) {
+  // Hair (back of head — full hair, no face visible)
+  rect(ctx, 5, 0, 6, 2, HAIR);
+  px(ctx, 4, 1, HAIR);
+  px(ctx, 11, 1, HAIR);
+  rect(ctx, 5, 1, 6, 6, HAIR); // full back of head is hair
+  // Ears (skin peeking out on sides)
+  px(ctx, 4, 3, SKIN_DARK);
+  px(ctx, 11, 3, SKIN_DARK);
+  // Neck
+  rect(ctx, 6, 7, 4, 1, SKIN_DARK);
+
+  // Body (back view — slightly different shading)
+  rect(ctx, 4, 7, 8, 8, bodyColor);
+  // Back center line (subtle detail)
+  rect(ctx, 7, 8, 2, 6, bodyDark);
+  // Shoulders
+  rect(ctx, 4, 7, 1, 2, bodyDark);
+  rect(ctx, 11, 7, 1, 2, bodyDark);
+
+  // Arms reaching forward (toward desk/keyboard)
+  if (frame === 0) {
+    rect(ctx, 2, 8, 2, 5, bodyColor);
+    rect(ctx, 12, 8, 2, 5, bodyColor);
+    // Hands forward on keyboard
+    rect(ctx, 1, 13, 2, 1, SKIN_DARK);
+    rect(ctx, 13, 13, 2, 1, SKIN_DARK);
+  } else {
+    rect(ctx, 2, 8, 2, 5, bodyColor);
+    rect(ctx, 12, 8, 2, 5, bodyColor);
+    rect(ctx, 2, 13, 2, 1, SKIN_DARK);
+    rect(ctx, 12, 13, 2, 1, SKIN_DARK);
+  }
+
+  // Sitting legs (bent, seen from back)
+  rect(ctx, 4, 15, 4, 3, "#2C3E50");
+  rect(ctx, 8, 15, 4, 3, "#2C3E50");
+  // Feet
+  rect(ctx, 3, 18, 3, 2, "#1a1a1a");
+  rect(ctx, 10, 18, 3, 2, "#1a1a1a");
+
+  // Subtle head bob when typing (frame 1)
+  if (frame === 1) {
+    // Slight lean forward — redraw head 1px lower... already drawn, just a visual hint
+    rect(ctx, 7, 0, 2, 1, bodyColor); // tiny shift illusion at top
+  }
 }
 
 function drawIdleLegs(ctx: CanvasRenderingContext2D, frame: number) {
