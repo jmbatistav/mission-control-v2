@@ -44,9 +44,10 @@ const departmentLayout: Record<string, { position: [number, number, number]; emo
 interface OfficeSceneProps {
   agents: Agent[];
   onAgentClick: (id: string) => void;
+  selectedId?: string | null;
 }
 
-export default function OfficeScene({ agents, onAgentClick }: OfficeSceneProps) {
+export default function OfficeScene({ agents, onAgentClick, selectedId }: OfficeSceneProps) {
   const cameraRef = useRef<CameraControllerHandle>(null);
 
   // Group agents by function
@@ -132,6 +133,7 @@ export default function OfficeScene({ agents, onAgentClick }: OfficeSceneProps) 
         agent={leader}
         resolvedColor={leader ? (colorMap[leader.color] || "#6b7280") : "#6b7280"}
         onAgentClick={handleAgentClick}
+        hideLabels={!!selectedId}
       />
 
       {/* Meeting room - top right */}
@@ -149,6 +151,7 @@ export default function OfficeScene({ agents, onAgentClick }: OfficeSceneProps) 
             agents={deptAgents}
             basePosition={config.position}
             onAgentClick={handleAgentClick}
+            hideLabels={!!selectedId}
           />
         );
       })}

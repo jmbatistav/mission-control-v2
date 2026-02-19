@@ -8,6 +8,7 @@ interface AgentLabelProps {
   status: "active" | "idle" | "offline";
   color: string;
   position: [number, number, number];
+  hidden?: boolean;
 }
 
 const statusColors: Record<string, string> = {
@@ -16,13 +17,15 @@ const statusColors: Record<string, string> = {
   offline: "#6b7280",
 };
 
-export default function AgentLabel({ name, avatar, status, color, position }: AgentLabelProps) {
+export default function AgentLabel({ name, avatar, status, color, position, hidden }: AgentLabelProps) {
+  if (hidden) return null;
   return (
     <Html
       position={[position[0], position[1] + 2.0, position[2]]}
       center
       distanceFactor={12}
       style={{ pointerEvents: "none" }}
+      zIndexRange={[0, 0]}
     >
       <div
         style={{

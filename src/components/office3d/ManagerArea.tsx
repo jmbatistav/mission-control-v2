@@ -19,9 +19,10 @@ interface ManagerAreaProps {
   agent?: Agent;
   resolvedColor: string;
   onAgentClick?: (id: string) => void;
+  hideLabels?: boolean;
 }
 
-export default function ManagerArea({ position, agent, resolvedColor, onAgentClick }: ManagerAreaProps) {
+export default function ManagerArea({ position, agent, resolvedColor, onAgentClick, hideLabels }: ManagerAreaProps) {
   return (
     <group position={position}>
       {/* Label */}
@@ -66,6 +67,7 @@ export default function ManagerArea({ position, agent, resolvedColor, onAgentCli
             status={agent.status as "active" | "idle" | "offline"}
             color={resolvedColor}
             position={[0, 0, 0.45]}
+            hidden={hideLabels}
           />
         </>
       )}

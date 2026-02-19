@@ -58,6 +58,7 @@ export default function Office3DPage() {
             currentTask: m.currentTask,
           }))}
           onAgentClick={(id) => setSelectedId(id as Id<"teamMembers">)}
+          selectedId={selectedId}
         />
       </div>
 

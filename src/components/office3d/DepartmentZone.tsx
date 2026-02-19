@@ -32,6 +32,7 @@ interface DepartmentZoneProps {
   agents: Agent[];
   basePosition: [number, number, number];
   onAgentClick?: (id: string) => void;
+  hideLabels?: boolean;
 }
 
 export default function DepartmentZone({
@@ -40,6 +41,7 @@ export default function DepartmentZone({
   agents,
   basePosition,
   onAgentClick,
+  hideLabels,
 }: DepartmentZoneProps) {
   const spacing = 3;
 
@@ -107,6 +109,7 @@ export default function DepartmentZone({
               status={agent.status as "active" | "idle" | "offline"}
               color={resolvedColor}
               position={[cubiclePos[0], 0, cubiclePos[2] + 0.45]}
+              hidden={hideLabels}
             />
           </group>
         );
