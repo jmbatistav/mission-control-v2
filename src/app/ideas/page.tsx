@@ -21,9 +21,9 @@ export default function IdeasPage() {
   const [filter, setFilter] = useState<FilterStatus>("all");
 
   const filteredIdeas =
-    ideas?.filter((i) => (filter === "all" ? true : i.status === filter)) ?? [];
+    ideas?.filter((i: { status: string }) => (filter === "all" ? true : i.status === filter)) ?? [];
 
-  const selectedIdea = ideas?.find((i) => i._id === editingId);
+  const selectedIdea = ideas?.find((i: { _id: string }) => i._id === editingId);
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
@@ -82,7 +82,7 @@ export default function IdeasPage() {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredIdeas.map((idea) => (
+          {filteredIdeas.map((idea: any) => (
             <IdeaCard
               key={idea._id}
               idea={idea}

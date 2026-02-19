@@ -21,11 +21,11 @@ export default function SpecsPage() {
   const [filter, setFilter] = useState<FilterStatus>("all");
 
   const filteredSpecs =
-    specs?.filter((s) => (filter === "all" ? true : s.status === filter)) ?? [];
+    specs?.filter((s: { status: string }) => (filter === "all" ? true : s.status === filter)) ?? [];
 
-  const ideaMap = new Map(ideas?.map((i) => [i._id, i.title]) ?? []);
+  const ideaMap = new Map<string, string>(ideas?.map((i: any) => [i._id, i.title] as [string, string]) ?? []);
 
-  const editingSpec = specs?.find((s) => s._id === editingId);
+  const editingSpec = specs?.find((s: { _id: string }) => s._id === editingId);
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
@@ -84,11 +84,11 @@ export default function SpecsPage() {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSpecs.map((spec) => (
+          {filteredSpecs.map((spec: any) => (
             <SpecCard
               key={spec._id}
               spec={spec}
-              ideaTitle={ideaMap.get(spec.ideaId)}
+              ideaTitle={ideaMap.get(spec.ideaId) as string | undefined}
               onClick={() => setSelectedId(spec._id)}
             />
           ))}

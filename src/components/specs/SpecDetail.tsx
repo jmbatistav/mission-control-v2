@@ -117,7 +117,7 @@ export default function SpecDetail({
             Linked Tasks
           </h4>
           <div className="space-y-2">
-            {tasks.map((task) => (
+            {tasks.map((task: any) => (
               <div
                 key={task._id}
                 className="flex items-center gap-2 p-2 bg-gray-800/50 rounded-lg"

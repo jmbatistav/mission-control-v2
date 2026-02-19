@@ -44,9 +44,9 @@ export default function PipelineStats() {
   const counts = [
     ideas?.length ?? 0,
     specs?.length ?? 0,
-    tasks?.filter((t) => t.status === "in_progress").length ?? 0,
-    tasks?.filter((t) => t.status === "testing").length ?? 0,
-    tasks?.filter((t) => t.status === "deployed").length ?? 0,
+    tasks?.filter((t: any) => t.status === "in_progress").length ?? 0,
+    tasks?.filter((t: any) => t.status === "testing").length ?? 0,
+    tasks?.filter((t: any) => t.status === "deployed").length ?? 0,
   ];
 
   return (

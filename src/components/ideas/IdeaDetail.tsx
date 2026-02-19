@@ -83,7 +83,7 @@ export default function IdeaDetail({
             Tags
           </h4>
           <div className="flex flex-wrap gap-1">
-            {idea.tags.map((tag) => (
+            {idea.tags.map((tag: string) => (
               <span
                 key={tag}
                 className="px-2 py-1 bg-gray-800 text-gray-400 text-xs rounded-full"
@@ -122,7 +122,7 @@ export default function IdeaDetail({
             Linked Specs
           </h4>
           <div className="space-y-2">
-            {specs.map((spec) => (
+            {specs.map((spec: any) => (
               <div
                 key={spec._id}
                 className="flex items-center gap-2 p-2 bg-gray-800/50 rounded-lg"

@@ -164,7 +164,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
           >
             <option value="">None</option>
-            {specs?.map((s) => (
+            {specs?.map((s: any) => (
               <option key={s._id} value={s._id}>
                 {s.title}
               </option>
@@ -181,7 +181,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
           >
             <option value="">None</option>
-            {ideas?.map((i) => (
+            {ideas?.map((i: any) => (
               <option key={i._id} value={i._id}>
                 {i.title}
               </option>

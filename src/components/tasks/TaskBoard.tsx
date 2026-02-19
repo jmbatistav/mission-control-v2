@@ -35,7 +35,7 @@ export default function TaskBoard({
 
   const grouped = COLUMNS.reduce(
     (acc, status) => {
-      acc[status] = tasks.filter((t) => t.status === status);
+      acc[status] = tasks.filter((t: any) => t.status === status);
       return acc;
     },
     {} as Record<string, typeof tasks>

@@ -84,7 +84,7 @@ export default function FileList({
       <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
         Files
       </h4>
-      {files.map((file) => (
+      {files.map((file: any) => (
         <FileItem key={file._id} file={file as FileEntry} />
       ))}
     </div>

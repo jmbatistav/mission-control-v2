@@ -43,7 +43,7 @@ export default function TasksPage() {
   const removeTask = useMutation(api.tasks.remove);
 
   const tasks = useQuery(api.tasks.list);
-  const editingTask = tasks?.find((t) => t._id === editingId);
+  const editingTask = tasks?.find((t: { _id: string }) => t._id === editingId);
 
   return (
     <div className="p-6 lg:p-8 max-w-full mx-auto space-y-6">
@@ -138,7 +138,7 @@ export default function TasksPage() {
             {/* Labels */}
             {selectedTask.labels && selectedTask.labels.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {selectedTask.labels.map((label) => (
+                {selectedTask.labels.map((label: string) => (
                   <span
                     key={label}
                     className="px-2 py-1 bg-gray-800 text-gray-400 text-xs rounded-full"

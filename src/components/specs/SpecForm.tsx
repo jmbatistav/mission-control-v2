@@ -76,7 +76,7 @@ export default function SpecForm({
           className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
         >
           <option value="">Select an idea...</option>
-          {ideas?.map((idea) => (
+          {ideas?.map((idea: any) => (
             <option key={idea._id} value={idea._id}>
               {idea.title}
             </option>
