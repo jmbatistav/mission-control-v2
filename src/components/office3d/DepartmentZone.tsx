@@ -51,10 +51,11 @@ export default function DepartmentZone({
   return (
     <group position={basePosition}>
       {/* Department label */}
-      <Html
+      {hideLabels ? null : <Html
         position={[(agents.length - 1) * spacing * 0.5, 2.5, 0]}
         center
         distanceFactor={15}
+        zIndexRange={[0, 0]}
       >
         <div
           style={{
@@ -72,7 +73,7 @@ export default function DepartmentZone({
         >
           {emoji} {name}
         </div>
-      </Html>
+      </Html>}
 
       {/* Subtle floor color difference */}
       <mesh

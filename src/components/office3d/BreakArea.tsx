@@ -4,9 +4,10 @@ import { Html } from "@react-three/drei";
 
 interface BreakAreaProps {
   position: [number, number, number];
+  hideLabels?: boolean;
 }
 
-export default function BreakArea({ position }: BreakAreaProps) {
+export default function BreakArea({ position, hideLabels }: BreakAreaProps) {
   return (
     <group position={position}>
       {/* Small coffee table */}
@@ -84,7 +85,7 @@ export default function BreakArea({ position }: BreakAreaProps) {
       </group>
 
       {/* Sign */}
-      <Html position={[0, 1.8, -1.2]} center distanceFactor={15}>
+      {hideLabels ? null : <Html position={[0, 1.8, -1.2]} center distanceFactor={15} zIndexRange={[0, 0]}>
         <div
           style={{
             background: "rgba(15, 23, 42, 0.85)",
@@ -101,7 +102,7 @@ export default function BreakArea({ position }: BreakAreaProps) {
         >
           ☕ Break Area
         </div>
-      </Html>
+      </Html>}
     </group>
   );
 }

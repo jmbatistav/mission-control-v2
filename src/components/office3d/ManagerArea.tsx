@@ -28,7 +28,7 @@ export default function ManagerArea({ position, agent, resolvedColor, onAgentCli
   return (
     <group position={position}>
       {/* Label */}
-      <Html position={[0, 2.5, 0]} center distanceFactor={15}>
+      {hideLabels ? null : <Html position={[0, 2.5, 0]} center distanceFactor={15} zIndexRange={[0, 0]}>
         <div
           style={{
             background: "rgba(15, 23, 42, 0.85)",
@@ -45,7 +45,7 @@ export default function ManagerArea({ position, agent, resolvedColor, onAgentCli
         >
           👑 Leadership
         </div>
-      </Html>
+      </Html>}
 
       <CubicleModel
         position={[0, 0, 0]}

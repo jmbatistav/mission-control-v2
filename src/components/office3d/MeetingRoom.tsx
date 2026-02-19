@@ -7,13 +7,12 @@ import * as THREE from "three";
 
 interface MeetingRoomProps {
   position: [number, number, number];
-  /** Active meeting title (if any) */
   activeMeetingTitle?: string;
-  /** Whether a meeting is in progress */
   isActive?: boolean;
+  hideLabels?: boolean;
 }
 
-export default function MeetingRoom({ position, activeMeetingTitle, isActive }: MeetingRoomProps) {
+export default function MeetingRoom({ position, activeMeetingTitle, isActive, hideLabels }: MeetingRoomProps) {
   const glowRef = useRef<THREE.Mesh>(null);
 
   const chairPositions: [number, number, number][] = [];
@@ -116,7 +115,7 @@ export default function MeetingRoom({ position, activeMeetingTitle, isActive }: 
       )}
 
       {/* Sign — shows meeting title when active */}
-      <Html position={[0, 2.3, -2.4]} center distanceFactor={15}>
+      {hideLabels ? null : <Html position={[0, 2.3, -2.4]} center distanceFactor={15} zIndexRange={[0, 0]}>
         <div
           style={{
             background: isActive
@@ -139,7 +138,7 @@ export default function MeetingRoom({ position, activeMeetingTitle, isActive }: 
             ? `🔴 ${activeMeetingTitle}`
             : "🏛️ Meeting Room"}
         </div>
-      </Html>
+      </Html>}
     </group>
   );
 }

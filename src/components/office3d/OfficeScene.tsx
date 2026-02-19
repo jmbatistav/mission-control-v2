@@ -191,6 +191,7 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
         position={[8, 0, -4]}
         activeMeetingTitle={activeMeeting?.title}
         isActive={!!activeMeeting}
+        hideLabels={!!selectedId}
       />
 
       {/* Department zones */}
@@ -237,7 +238,7 @@ export default function OfficeScene({ agents, activeMeetings = [], onAgentClick,
         })}
 
       {/* Break area - bottom right */}
-      <BreakArea position={[8, 0, 10]} />
+      <BreakArea position={[8, 0, 10]} hideLabels={!!selectedId} />
 
       {/* Fog for depth */}
       <fog attach="fog" args={["#030712", 20, 45]} />
