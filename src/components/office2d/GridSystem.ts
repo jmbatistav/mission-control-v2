@@ -72,8 +72,8 @@ export function getAgentSeatPosition(dept: string, indexInDept: number): { x: nu
   const cubicles = CUBICLE_POSITIONS[dept];
   if (!cubicles || cubicles.length === 0) return { x: 2, y: 4 };
   const cubicle = cubicles[indexInDept % cubicles.length];
-  // Agent sits at row 1 of cubicle (the chair row, right behind the desk)
-  return { x: cubicle.gridX + 1, y: cubicle.gridY + 1 };
+  // Agent sits right at the desk row (row 0 of cubicle)
+  return { x: cubicle.gridX + 1, y: cubicle.gridY };
 }
 
 /* ─── Meeting room seat positions ─── */
