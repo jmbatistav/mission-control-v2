@@ -129,21 +129,21 @@ export default function CalendarPage() {
   const upcoming = [...filteredEvents].filter((e) => e.startTime >= Date.now()).sort((a, b) => a.startTime - b.startTime);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">📅 Calendar</h1>
+          <h1 className="text-2xl font-bold text-white">📅 Calendar</h1>
           <p className="text-sm text-gray-500 mt-1">Scheduled tasks, cron jobs & deadlines</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex gap-1">
             {(["month", "list"] as const).map((v) => (
-              <button key={v} onClick={() => setViewMode(v)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewMode === v ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
+              <button key={v} onClick={() => setViewMode(v)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewMode === v ? "bg-cyan-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
                 {v === "month" ? "📆 Month" : "📋 List"}
               </button>
             ))}
           </div>
-          <button onClick={() => { resetForm(); setShowForm(true); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors">
             + New Event
           </button>
         </div>
@@ -152,7 +152,7 @@ export default function CalendarPage() {
       {/* Type Filter */}
       <div className="flex gap-2">
         {["all", "cron", "scheduled", "deadline", "milestone"].map((t) => (
-          <button key={t} onClick={() => setTypeFilter(t)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 ${typeFilter === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
+          <button key={t} onClick={() => setTypeFilter(t)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 ${typeFilter === t ? "bg-cyan-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
             {t !== "all" && <span>{typeConfig[t as EventType].emoji}</span>}
             {t === "all" ? "All" : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
@@ -162,7 +162,7 @@ export default function CalendarPage() {
       {viewMode === "month" ? (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Calendar Grid */}
-          <div className="lg:col-span-3 bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="lg:col-span-3 bg-gray-900 border border-gray-700/50 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <button onClick={prevMonth} className="p-2 text-gray-400 hover:text-gray-200 hover:bg-gray-800 rounded-lg">←</button>
               <h2 className="text-lg font-semibold">{monthName}</h2>
@@ -188,10 +188,10 @@ export default function CalendarPage() {
                     onClick={() => setSelectedDate(dateStr)}
                     onDoubleClick={() => openNewOnDate(dateStr)}
                     className={`min-h-[80px] p-1.5 rounded cursor-pointer transition-colors border ${
-                      isSelected ? "border-blue-500 bg-blue-500/10" : isToday ? "border-blue-500/30 bg-gray-900" : "border-transparent bg-gray-950/30 hover:bg-gray-900/50"
+                      isSelected ? "border-cyan-500 bg-cyan-500/10" : isToday ? "border-cyan-500/30 bg-gray-900" : "border-transparent bg-gray-950/30 hover:bg-gray-900/50"
                     }`}
                   >
-                    <span className={`text-xs font-medium ${isToday ? "text-blue-400" : "text-gray-400"}`}>{day}</span>
+                    <span className={`text-xs font-medium ${isToday ? "text-cyan-400" : "text-gray-400"}`}>{day}</span>
                     <div className="mt-1 space-y-0.5">
                       {dayEvents.slice(0, 3).map((ev) => (
                         <div key={ev._id} className={`text-[10px] px-1 py-0.5 rounded truncate border ${typeConfig[ev.type].bg}`}>
@@ -209,7 +209,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Day Detail Sidebar */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-6">
             <h3 className="text-sm font-semibold text-gray-300 mb-4">
               {selectedDate ? new Date(selectedDate + "T12:00").toLocaleDateString("default", { weekday: "long", month: "long", day: "numeric" }) : "Select a day"}
             </h3>
@@ -288,11 +288,11 @@ export default function CalendarPage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-blue-500" placeholder="Event title" />
+            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-cyan-500" placeholder="Event title" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-blue-500 resize-none" placeholder="Optional description" />
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-cyan-500 resize-none" placeholder="Optional description" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -315,17 +315,17 @@ export default function CalendarPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Start Date</label>
-              <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-blue-500" />
+              <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-cyan-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Start Time</label>
-              <input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-blue-500" />
+              <input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm focus:outline-none focus:border-cyan-500" />
             </div>
           </div>
           {form.type === "cron" && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Cron Schedule / Description</label>
-              <input value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm font-mono focus:outline-none focus:border-blue-500" placeholder="0 9 * * * (every day at 9am)" />
+              <input value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 text-sm font-mono focus:outline-none focus:border-cyan-500" placeholder="0 9 * * * (every day at 9am)" />
             </div>
           )}
           <div className="flex items-center gap-3">
@@ -345,7 +345,7 @@ export default function CalendarPage() {
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button onClick={resetForm} className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200">Cancel</button>
-            <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg">{editingId ? "Update" : "Create"}</button>
+            <button onClick={handleSubmit} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg">{editingId ? "Update" : "Create"}</button>
           </div>
         </div>
       </Modal>

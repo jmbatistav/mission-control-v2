@@ -25,7 +25,7 @@ export default function SpecCard({
   return (
     <div
       onClick={onClick}
-      className="bg-gray-900 border border-gray-800 rounded-xl p-4 cursor-pointer hover:border-gray-700 hover:scale-[1.02] transition-all duration-200"
+      className="bg-gray-900 border border-gray-700/50 rounded-xl p-4 cursor-pointer hover:border-gray-600 hover:scale-[1.02] transition-all duration-200"
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="text-sm font-semibold text-gray-100 line-clamp-1 flex-1">

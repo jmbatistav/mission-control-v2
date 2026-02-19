@@ -153,7 +153,7 @@ function Cubicle({
         <path d="M58,10 L80,0 L102,10 L80,20 Z" fill="#030712" />
       )}
       {/* Monitor power LED */}
-      <circle cx="80" cy="21" r="0.8" fill={statusInfo[member.status].color} opacity={isWorking ? 1 : 0.5} />
+      <circle cx="80" cy="21" r="0.8" fill={statusInfo[member.status as Status].color} opacity={isWorking ? 1 : 0.5} />
 
       {/* Keyboard */}
       <path
@@ -269,12 +269,12 @@ function Cubicle({
       </g>
 
       {/* Status indicator */}
-      <circle cx="80" cy="-20" r="4" fill={statusInfo[member.status].color} opacity={isWorking ? 1 : 0.6}>
+      <circle cx="80" cy="-20" r="4" fill={statusInfo[member.status as Status].color} opacity={isWorking ? 1 : 0.6}>
         {isWorking && (
           <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
         )}
       </circle>
-      <circle cx="80" cy="-20" r="6" fill="none" stroke={statusInfo[member.status].color} strokeWidth="0.5" opacity={isWorking ? 0.4 : 0}>
+      <circle cx="80" cy="-20" r="6" fill="none" stroke={statusInfo[member.status as Status].color} strokeWidth="0.5" opacity={isWorking ? 0.4 : 0}>
         {isWorking && (
           <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite" />
         )}
@@ -382,11 +382,11 @@ export default function OfficePage() {
 
   if (members.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto flex flex-col items-center justify-center h-[70vh]">
+      <div className="p-6 lg:p-8 max-w-6xl mx-auto flex flex-col items-center justify-center h-[70vh]">
         <div className="text-8xl mb-6 animate-bounce">🏢</div>
         <h2 className="text-xl font-bold text-gray-200 mb-2">The office is empty</h2>
         <p className="text-sm text-gray-500 mb-6">Initialize the team to open the office</p>
-        <button onClick={() => seedTeam({})} className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors">
+        <button onClick={() => seedTeam({})} className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-xl transition-colors">
           🚀 Open the Office
         </button>
       </div>
@@ -394,13 +394,13 @@ export default function OfficePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">🏢 Digital Office</h1>
+          <h1 className="text-2xl font-bold text-white">🏢 Digital Office</h1>
           <p className="text-sm text-gray-500 mt-1">Cleverwave HQ — Live View</p>
         </div>
-        <div className="flex items-center gap-4 bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-xl px-5 py-2.5">
+        <div className="flex items-center gap-4 bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-xl px-5 py-2.5">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-sm"><span className="font-bold text-emerald-400">{activeCount}</span> <span className="text-gray-500">Working</span></span>
@@ -424,7 +424,7 @@ export default function OfficePage() {
       </div>
 
       {/* Isometric Office */}
-      <div className="bg-gradient-to-b from-gray-950 via-[#0a0f1a] to-gray-950 rounded-2xl border border-gray-800 overflow-hidden">
+      <div className="bg-gradient-to-b from-gray-950 via-[#0a0f1a] to-gray-950 rounded-2xl border border-gray-700/50 overflow-hidden">
         <svg
           viewBox="0 0 900 580"
           className="w-full h-auto"
@@ -522,7 +522,7 @@ export default function OfficePage() {
                 ))}
               </div>
             </div>
-            <div className="flex items-center justify-between pt-3 border-t border-gray-800">
+            <div className="flex items-center justify-between pt-3 border-t border-gray-700/50">
               <span className="text-xs text-gray-500">Owned by <span className="text-gray-400">{selectedMember.owner}</span></span>
               {selectedMember.model && <span className="text-xs text-gray-600 font-mono">{selectedMember.model}</span>}
             </div>

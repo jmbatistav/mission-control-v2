@@ -72,11 +72,11 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">👥 Team Structure</h1>
+          <h1 className="text-2xl font-bold text-white">👥 Team Structure</h1>
           <p className="text-sm text-gray-500 mt-1">
             {members.length} agents · {activeCount} active
           </p>
@@ -84,13 +84,13 @@ export default function TeamPage() {
         <div className="flex items-center gap-3">
           <div className="flex gap-1">
             {(["org", "grid"] as const).map((v) => (
-              <button key={v} onClick={() => setViewMode(v)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewMode === v ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
+              <button key={v} onClick={() => setViewMode(v)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${viewMode === v ? "bg-cyan-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
                 {v === "org" ? "🏛️ Org Chart" : "📊 Grid"}
               </button>
             ))}
           </div>
           {members.length === 0 && (
-            <button onClick={() => seedTeam({})} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
+            <button onClick={() => seedTeam({})} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors">
               🚀 Initialize Team
             </button>
           )}
@@ -102,7 +102,7 @@ export default function TeamPage() {
           <span className="text-6xl mb-4">👥</span>
           <h3 className="text-lg font-medium text-gray-300 mb-2">No team members yet</h3>
           <p className="text-sm text-gray-500 mb-6">Click &ldquo;Initialize Team&rdquo; to create the full agent roster</p>
-          <button onClick={() => seedTeam({})} className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors">
+          <button onClick={() => seedTeam({})} className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-xl transition-colors">
             🚀 Initialize Team
           </button>
         </div>
@@ -128,7 +128,7 @@ export default function TeamPage() {
                   <div
                     key={member._id}
                     onClick={() => setSelectedId(member._id)}
-                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 cursor-pointer hover:border-gray-700 hover:scale-[1.01] transition-all group"
+                    className="bg-gray-900 border border-gray-700/50 rounded-xl p-5 cursor-pointer hover:border-gray-600 hover:scale-[1.01] transition-all group"
                   >
                     {/* Avatar + Status */}
                     <div className="flex items-start justify-between mb-3">
@@ -183,7 +183,7 @@ export default function TeamPage() {
           ))}
 
           {/* Org Connections Visualization */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mt-8">
+          <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-6 mt-8">
             <h3 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Reporting Structure</h3>
             <div className="flex flex-col items-center">
               {/* CTO */}
@@ -219,17 +219,17 @@ export default function TeamPage() {
         <div>
           <div className="flex gap-2 mb-4">
             {["all", ...functionOrder].map((f) => (
-              <button key={f} onClick={() => setFuncFilter(f)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${funcFilter === f ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
+              <button key={f} onClick={() => setFuncFilter(f)} className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${funcFilter === f ? "bg-cyan-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"}`}>
                 {f === "all" ? "All" : functionConfig[f as TeamFunction].emoji + " " + functionConfig[f as TeamFunction].label}
               </button>
             ))}
           </div>
 
           {/* Table */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <div className="bg-gray-900 border border-gray-700/50 rounded-xl overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-800">
+                <tr className="border-b border-gray-700/50">
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Agent</th>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Role</th>
                   <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3">Department</th>
@@ -263,8 +263,8 @@ export default function TeamPage() {
                     <td className="px-5 py-3">
                       {editingTask?.id === member._id ? (
                         <div className="flex gap-1">
-                          <input value={editingTask.task} onChange={(e) => setEditingTask({ ...editingTask, task: e.target.value })} onKeyDown={(e) => e.key === "Enter" && saveTask()} className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs text-gray-200 w-full focus:outline-none focus:border-blue-500" autoFocus />
-                          <button onClick={saveTask} className="text-xs text-blue-400 hover:text-blue-300">✓</button>
+                          <input value={editingTask.task} onChange={(e) => setEditingTask({ ...editingTask, task: e.target.value })} onKeyDown={(e) => e.key === "Enter" && saveTask()} className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs text-gray-200 w-full focus:outline-none focus:border-cyan-500" autoFocus />
+                          <button onClick={saveTask} className="text-xs text-cyan-400 hover:text-cyan-300">✓</button>
                         </div>
                       ) : (
                         <span onClick={() => setEditingTask({ id: member._id, task: member.currentTask ?? "" })} className="text-xs text-gray-500 cursor-pointer hover:text-gray-300">
@@ -335,7 +335,7 @@ export default function TeamPage() {
             </div>
 
             {/* Meta */}
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-800">
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-700/50">
               <div>
                 <p className="text-xs text-gray-500">Owner</p>
                 <p className="text-sm text-gray-300">{selectedMember.owner}</p>

@@ -83,7 +83,7 @@ export default function PipelinePage() {
   return (
     <div className="p-6 lg:p-8 max-w-full mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-100">⚡ Pipeline</h1>
+        <h1 className="text-2xl font-bold text-white">⚡ Pipeline</h1>
         <p className="text-sm text-gray-500 mt-1">
           {totalActive} items flowing through the pipeline
         </p>
@@ -104,11 +104,11 @@ export default function PipelinePage() {
                     {items.length}
                   </span>
                 </div>
-                <div className="space-y-2 min-h-[200px] bg-gray-900/50 border border-gray-800 rounded-xl p-3">
+                <div className="space-y-2 min-h-[200px] bg-gray-900/50 border border-gray-700/50 rounded-xl p-3">
                   {items.map((item: PipelineItem) => (
                     <div
                       key={item.id}
-                      className="bg-gray-900 border border-gray-800 rounded-lg p-3 hover:border-gray-700 transition-colors"
+                      className="bg-gray-900 border border-gray-700/50 rounded-lg p-3 hover:border-gray-600 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-1">
                         <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">

@@ -50,11 +50,11 @@ export default function PipelineStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       {stages.map((stage, i) => (
         <div
           key={stage.label}
-          className={`bg-gradient-to-br ${stage.color} border rounded-xl p-4`}
+          className={`bg-gradient-to-br ${stage.color} border rounded-xl p-4 transition-colors`}
         >
           <div className="text-2xl mb-1">{stage.emoji}</div>
           <div className={`text-2xl font-bold ${stage.textColor}`}>

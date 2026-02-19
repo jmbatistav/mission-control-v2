@@ -110,18 +110,18 @@ export default function MemoriesPage() {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto flex items-center justify-center h-64">
+      <div className="p-6 lg:p-8 max-w-6xl mx-auto flex items-center justify-center h-64">
         <div className="text-gray-500 animate-pulse">Loading memories...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">🧠 Memories</h1>
+          <h1 className="text-2xl font-bold text-white">🧠 Memories</h1>
           <p className="text-sm text-gray-500 mt-1">
             {stats.total} documents · {formatSize(stats.totalSize)} total
           </p>
@@ -152,7 +152,7 @@ export default function MemoriesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search across all memories... (titles, content, anything)"
-          className="w-full pl-12 pr-4 py-3.5 bg-gray-900 border border-gray-800 rounded-xl text-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all placeholder-gray-600"
+          className="w-full pl-12 pr-4 py-3.5 bg-gray-900 border border-gray-700/50 rounded-xl text-gray-200 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder-gray-600"
         />
         {search && (
           <button
@@ -167,7 +167,7 @@ export default function MemoriesPage() {
       {/* Search Results Count */}
       {search.trim() && (
         <div className="text-sm text-gray-500">
-          Found <span className="text-blue-400 font-medium">{filtered.length}</span> document{filtered.length !== 1 ? "s" : ""} matching &ldquo;<span className="text-gray-300">{search}</span>&rdquo;
+          Found <span className="text-cyan-400 font-medium">{filtered.length}</span> document{filtered.length !== 1 ? "s" : ""} matching &ldquo;<span className="text-gray-300">{search}</span>&rdquo;
         </div>
       )}
 
@@ -178,7 +178,7 @@ export default function MemoriesPage() {
             key={t}
             onClick={() => setTypeFilter(t)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
-              typeFilter === t ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+              typeFilter === t ? "bg-cyan-600 text-white" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
             }`}
           >
             {t !== "all" && <span>{typeConfig[t as keyof typeof typeConfig].emoji}</span>}
@@ -219,7 +219,7 @@ export default function MemoriesPage() {
                 </div>
 
                 {/* Title */}
-                <h3 className="font-semibold text-gray-200 mb-2 group-hover:text-blue-400 transition-colors">
+                <h3 className="font-semibold text-gray-200 mb-2 group-hover:text-cyan-400 transition-colors">
                   {doc.title}
                 </h3>
 
@@ -227,7 +227,7 @@ export default function MemoriesPage() {
                 {snippets && snippets.length > 0 ? (
                   <div className="space-y-1.5 mb-3">
                     {snippets.slice(0, 2).map((snippet, i) => (
-                      <p key={i} className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1.5 rounded border-l-2 border-blue-500/50">
+                      <p key={i} className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1.5 rounded border-l-2 border-cyan-500/50">
                         {snippet}
                       </p>
                     ))}
@@ -257,7 +257,7 @@ export default function MemoriesPage() {
         {selectedDoc && (
           <div>
             {/* Doc Meta */}
-            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-800">
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700/50">
               <span className="text-lg">{typeConfig[selectedDoc.type].emoji}</span>
               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${typeConfig[selectedDoc.type].badge}`}>
                 {typeConfig[selectedDoc.type].label}

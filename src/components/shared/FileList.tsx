@@ -35,7 +35,7 @@ function FileItem({ file }: { file: FileEntry }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-blue-300 truncate block"
+            className="text-sm text-cyan-400 hover:text-cyan-300 truncate block"
           >
             {file.name}
           </a>

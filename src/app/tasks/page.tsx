@@ -50,14 +50,14 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">✅ Tasks</h1>
+          <h1 className="text-2xl font-bold text-white">✅ Tasks</h1>
           <p className="text-sm text-gray-500 mt-1">
             Kanban board — move tasks through the pipeline
           </p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + New Task
         </button>

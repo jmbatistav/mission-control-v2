@@ -36,7 +36,7 @@ export default function QuickActions({
         <button
           key={action.label}
           onClick={action.onClick}
-          className={`flex items-center gap-2 px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-sm font-medium text-gray-300 transition-all ${action.color}`}
+          className={`flex items-center gap-2 px-4 py-2.5 bg-gray-900 border border-gray-700/50 rounded-xl text-sm font-medium text-gray-300 transition-all ${action.color}`}
         >
           <span>{action.emoji}</span>
           {action.label}

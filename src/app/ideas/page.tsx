@@ -30,14 +30,14 @@ export default function IdeasPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">💡 Ideas</h1>
+          <h1 className="text-2xl font-bold text-white">💡 Ideas</h1>
           <p className="text-sm text-gray-500 mt-1">
             Capture and manage your ideas
           </p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + New Idea
         </button>
@@ -53,8 +53,8 @@ export default function IdeasPage() {
             onClick={() => setFilter(status)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors capitalize ${
               filter === status
-                ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                : "text-gray-400 hover:text-gray-200 border border-gray-800 hover:border-gray-700"
+                ? "bg-cyan-600/20 text-cyan-400 border border-cyan-500/30"
+                : "text-gray-400 hover:text-gray-200 border border-gray-700/50 hover:border-gray-600"
             }`}
           >
             {status}

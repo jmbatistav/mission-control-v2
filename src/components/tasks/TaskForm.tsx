@@ -92,7 +92,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500 transition-colors"
           placeholder="Task title"
         />
       </div>
@@ -104,7 +104,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500 transition-colors resize-none"
           placeholder="Optional description..."
         />
       </div>
@@ -116,7 +116,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
           <select
             value={assignee}
             onChange={(e) => setAssignee(e.target.value as "Kar" | "Joma")}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500"
           >
             <option value="Kar">Kar</option>
             <option value="Joma">Joma</option>
@@ -133,7 +133,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
                 e.target.value as "low" | "medium" | "high" | "urgent"
               )
             }
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500"
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -149,7 +149,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
         <input
           value={labelsInput}
           onChange={(e) => setLabelsInput(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500 transition-colors"
           placeholder="bug, feature, ui (comma separated)"
         />
       </div>
@@ -161,7 +161,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
           <select
             value={specId}
             onChange={(e) => setSpecId(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500"
           >
             <option value="">None</option>
             {specs?.map((s: any) => (
@@ -178,7 +178,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
           <select
             value={ideaId}
             onChange={(e) => setIdeaId(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500"
           >
             <option value="">None</option>
             {ideas?.map((i: any) => (
@@ -200,7 +200,7 @@ export default function TaskForm({ task, onClose }: TaskFormProps) {
         <button
           type="submit"
           disabled={submitting}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
         >
           {submitting ? "Saving..." : task ? "Update" : "Create Task"}
         </button>

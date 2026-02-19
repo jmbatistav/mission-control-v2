@@ -99,13 +99,13 @@ export default function Sidebar() {
     <aside
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
-      className={`fixed left-0 top-0 h-screen bg-gray-900 border-r border-gray-800 z-40 flex flex-col transition-all duration-300 ${
+      className={`fixed left-0 top-0 h-screen bg-gray-900 border-r border-gray-700/50 z-40 flex flex-col transition-all duration-300 ${
         expanded ? "w-60" : "w-16"
       }`}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center px-4 border-b border-gray-800">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+      <div className="h-16 flex items-center px-4 border-b border-gray-700/50">
+        <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
           MC
         </div>
         {expanded && (
@@ -128,7 +128,7 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                 isActive
-                  ? "bg-blue-600/20 text-blue-400"
+                  ? "bg-cyan-600/20 text-cyan-400"
                   : "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
               }`}
             >
@@ -144,7 +144,7 @@ export default function Sidebar() {
       </nav>
 
       {/* User Switcher */}
-      <div className="border-t border-gray-800 p-3">
+      <div className="border-t border-gray-700/50 p-3">
         <button
           onClick={() => setActiveUser(activeUser === "Kar" ? "Joma" : "Kar")}
           className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-gray-800 transition-colors"

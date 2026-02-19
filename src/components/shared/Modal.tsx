@@ -49,9 +49,9 @@ export default function Modal({
         onClick={onClose}
       />
       <div
-        className={`relative ${sizeClasses[size]} w-full mx-4 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl max-h-[85vh] flex flex-col`}
+        className={`relative ${sizeClasses[size]} w-full mx-4 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-h-[85vh] flex flex-col`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700/50">
           <h2 className="text-lg font-semibold text-gray-100">{title}</h2>
           <button
             onClick={onClose}

@@ -73,7 +73,7 @@ export default function SpecForm({
           value={ideaId}
           onChange={(e) => setIdeaId(e.target.value)}
           required
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500"
         >
           <option value="">Select an idea...</option>
           {ideas?.map((idea: any) => (
@@ -91,7 +91,7 @@ export default function SpecForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 focus:outline-none focus:border-cyan-500 transition-colors"
           placeholder="Spec title"
         />
       </div>
@@ -104,7 +104,7 @@ export default function SpecForm({
           onChange={(e) => setContent(e.target.value)}
           required
           rows={10}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 font-mono focus:outline-none focus:border-blue-500 transition-colors resize-none"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 font-mono focus:outline-none focus:border-cyan-500 transition-colors resize-none"
           placeholder="Write your spec in markdown..."
         />
       </div>
@@ -119,7 +119,7 @@ export default function SpecForm({
         <button
           type="submit"
           disabled={submitting || !ideaId}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
         >
           {submitting ? "Saving..." : spec ? "Update" : "Create Spec"}
         </button>

@@ -85,7 +85,7 @@ export default function SpecDetail({
         <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
           Content
         </h4>
-        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-800">
+        <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
           <MarkdownRenderer content={spec.content} />
         </div>
       </div>

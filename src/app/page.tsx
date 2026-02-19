@@ -18,7 +18,7 @@ export default function DashboardPage() {
     <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">
           Your development pipeline at a glance
         </p>

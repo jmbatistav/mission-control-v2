@@ -59,7 +59,7 @@ export default function TaskCard({
   return (
     <div
       onClick={onClick}
-      className="bg-gray-900 border border-gray-800 rounded-xl p-3 cursor-pointer hover:border-gray-700 hover:scale-[1.02] transition-all duration-200 group"
+      className="bg-gray-900 border border-gray-700/50 rounded-xl p-3 cursor-pointer hover:border-gray-600 hover:scale-[1.02] transition-all duration-200 group"
     >
       <div className="flex items-start justify-between mb-2">
         <h4 className="text-sm font-medium text-gray-100 line-clamp-2 flex-1">
