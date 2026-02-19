@@ -1,0 +1,11 @@
+[00:00:01.261] Server  LOG     ✓ Ready in 922ms
+[00:00:13.807] Server  LOG     ○ Compiling / ...
+[00:00:14.576] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:41.681] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:45.975] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:52.639] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:37.096] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:37.333] Browser ERROR   uncaughtError: Error: [CONVEX Q(calendarEvents:list)] [Request ID: 11dc389022248033] Server Error
+Could not find public function for 'calendarEvents:list'. Did you forget to run `npx convex dev` or `npx convex deploy`?
+
+  Called by client
