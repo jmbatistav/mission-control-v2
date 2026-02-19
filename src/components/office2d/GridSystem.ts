@@ -70,10 +70,11 @@ export const DEPT_MAP: Record<string, string> = {
 /** Get the grid cell where an agent sits (chair position inside cubicle) */
 export function getAgentSeatPosition(dept: string, indexInDept: number): { x: number; y: number } {
   const cubicles = CUBICLE_POSITIONS[dept];
-  if (!cubicles || cubicles.length === 0) return { x: 1, y: 1 };
+  if (!cubicles || cubicles.length === 0) return { x: 2, y: 4 };
   const cubicle = cubicles[indexInDept % cubicles.length];
-  // Agent sits at middle of cubicle: +1x, +1y from cubicle origin
-  return { x: cubicle.gridX + 1, y: cubicle.gridY + 1 };
+  // Agent sits at row 2 of cubicle (behind desk row 0, chair at row 1)
+  // Using row 2 (front of cubicle) so they visually sit IN FRONT of the desk
+  return { x: cubicle.gridX + 1, y: cubicle.gridY + 2 };
 }
 
 /* ─── Meeting room seat positions ─── */
@@ -98,8 +99,8 @@ export function getMeetingSeat(seatIndex: number): { x: number; y: number } {
 export function getBreakAreaPosition(): { x: number; y: number } {
   const zone = ZONES.breakArea;
   return {
-    x: zone.x + 1 + Math.floor(Math.random() * 3),
-    y: zone.y + 1 + Math.floor(Math.random() * 2),
+    x: zone.x + 1 + Math.floor(Math.random() * 2),
+    y: zone.y + 3, // front of break area, away from furniture
   };
 }
 
@@ -121,22 +122,33 @@ export function buildBlockedGrid(): boolean[][] {
     }
   }
 
-  // Block cubicle desk cells (row 0 of each cubicle)
+  // Block cubicle desk and chair rows
   for (const dept of Object.values(CUBICLE_POSITIONS)) {
     for (const cub of dept) {
-      // Desk row (top row of cubicle): block all 3 cells
       for (let dx = 0; dx < 3; dx++) {
+        // Row 0: desk — always blocked
         const bx = cub.gridX + dx;
-        const by = cub.gridY;
-        if (bx < OFFICE_COLS && by < OFFICE_ROWS) {
-          grid[by][bx] = true;
+        if (bx < OFFICE_COLS && cub.gridY < OFFICE_ROWS) {
+          grid[cub.gridY][bx] = true;
+        }
+        // Row 1: chair area — blocked for pathfinding (only the agent can be there)
+        if (bx < OFFICE_COLS && cub.gridY + 1 < OFFICE_ROWS) {
+          grid[cub.gridY + 1][bx] = true;
         }
       }
     }
   }
 
-  // Block meeting table center
-  grid[MEETING_CENTER.y][MEETING_CENTER.x] = true;
+  // Block meeting table area (center 3x2)
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 0; dy++) {
+      const mx = MEETING_CENTER.x + dx;
+      const my = MEETING_CENTER.y + dy;
+      if (mx >= 0 && mx < OFFICE_COLS && my >= 0 && my < OFFICE_ROWS) {
+        grid[my][mx] = true;
+      }
+    }
+  }
 
   // Block edges (walls)
   for (let x = 0; x < OFFICE_COLS; x++) {

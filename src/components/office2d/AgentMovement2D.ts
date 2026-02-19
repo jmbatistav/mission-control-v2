@@ -31,8 +31,8 @@ export class AgentMovement {
   constructor(gridX: number, gridY: number) {
     this.gridX = gridX;
     this.gridY = gridY;
-    this.pixelX = gridX * CELL_SIZE;
-    this.pixelY = gridY * CELL_SIZE;
+    this.pixelX = gridX * CELL_SIZE + CELL_SIZE / 2;
+    this.pixelY = gridY * CELL_SIZE + CELL_SIZE / 2;
   }
 
   get isMoving(): boolean {
@@ -51,8 +51,8 @@ export class AgentMovement {
   teleport(gridX: number, gridY: number) {
     this.gridX = gridX;
     this.gridY = gridY;
-    this.pixelX = gridX * CELL_SIZE;
-    this.pixelY = gridY * CELL_SIZE;
+    this.pixelX = gridX * CELL_SIZE + CELL_SIZE / 2;
+    this.pixelY = gridY * CELL_SIZE + CELL_SIZE / 2;
     this.path = [];
     this.pathIndex = 0;
     this.moving = false;
@@ -63,11 +63,10 @@ export class AgentMovement {
     this.path = [];
     this.pathIndex = 0;
     this.moving = false;
-    // Snap to nearest grid
-    this.gridX = Math.round(this.pixelX / CELL_SIZE);
-    this.gridY = Math.round(this.pixelY / CELL_SIZE);
-    this.pixelX = this.gridX * CELL_SIZE;
-    this.pixelY = this.gridY * CELL_SIZE;
+    this.gridX = Math.round((this.pixelX - CELL_SIZE / 2) / CELL_SIZE);
+    this.gridY = Math.round((this.pixelY - CELL_SIZE / 2) / CELL_SIZE);
+    this.pixelX = this.gridX * CELL_SIZE + CELL_SIZE / 2;
+    this.pixelY = this.gridY * CELL_SIZE + CELL_SIZE / 2;
   }
 
   /** Update movement each frame */
@@ -78,8 +77,8 @@ export class AgentMovement {
     }
 
     const target = this.path[this.pathIndex];
-    const targetPx = target.x * CELL_SIZE;
-    const targetPy = target.y * CELL_SIZE;
+    const targetPx = target.x * CELL_SIZE + CELL_SIZE / 2;
+    const targetPy = target.y * CELL_SIZE + CELL_SIZE / 2;
 
     const dx = targetPx - this.pixelX;
     const dy = targetPy - this.pixelY;
@@ -87,7 +86,7 @@ export class AgentMovement {
 
     const step = SPEED * CELL_SIZE * (deltaMs / 1000);
 
-    if (dist <= step) {
+    if (dist <= step + 0.5) {
       // Arrived at waypoint
       this.pixelX = targetPx;
       this.pixelY = targetPy;

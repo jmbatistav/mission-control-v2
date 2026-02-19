@@ -324,16 +324,16 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
             const colorHex = getColorHex(state.color);
             const tex = getAgentTexture(colorHex, state.animState, 0);
             const sprite = new Sprite(tex);
-            sprite.width = CELL_SIZE;
-            sprite.height = CELL_SIZE * 1.5;
-            sprite.anchor.set(0.5, 0.5);
+            sprite.width = CELL_SIZE * 0.85;
+            sprite.height = CELL_SIZE * 1.25;
+            sprite.anchor.set(0.5, 0.8); // anchor near bottom so feet touch ground
 
             const movement = new AgentMovement(state.homeX, state.homeY);
             const anim = new AgentAnimController();
             anim.setState(state.animState);
 
             const glow = new Graphics();
-            glow.roundRect(0, 0, CELL_SIZE + 8, CELL_SIZE * 1.5 + 8, 4);
+            glow.roundRect(-CELL_SIZE * 0.5, -CELL_SIZE * 1.1, CELL_SIZE, CELL_SIZE * 1.3, 4);
             glow.fill({ color: 0x06b6d4, alpha: 0.3 });
             glow.visible = false;
             agentContainer.addChild(glow);
@@ -439,13 +439,13 @@ export default function Office2D({ agentStates, onAgentClick, selectedId }: Offi
           const isSelected = rt.state.agentId === selectedIdRef.current;
           rt.selectionGlow.visible = isSelected;
           if (isSelected) {
-            rt.selectionGlow.x = rt.movement.pixelX - 4;
-            rt.selectionGlow.y = rt.movement.pixelY - 4;
+            rt.selectionGlow.x = rt.movement.pixelX;
+            rt.selectionGlow.y = rt.movement.pixelY;
           }
 
-          // Position name label above sprite
+          // Position name label above sprite head
           rt.nameLabel.x = rt.movement.pixelX;
-          rt.nameLabel.y = rt.movement.pixelY - CELL_SIZE * 0.9;
+          rt.nameLabel.y = rt.movement.pixelY - CELL_SIZE * 1.2;
 
           if (!stillMoving && rt.anim.state === "walking") {
             rt.anim.setState(rt.state.animState !== "walking" ? rt.state.animState : "idle");
